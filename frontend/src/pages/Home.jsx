@@ -8,6 +8,7 @@ import { getDifficultyColor } from '../utils/helpers';
  * Home page component
  * Landing page with hero section, features, and call-to-action
  */
+
 const Home = () => {
   const [daily, setDaily] = useState({ date: '', challenges: [] });
   const [loading, setLoading] = useState(true);
