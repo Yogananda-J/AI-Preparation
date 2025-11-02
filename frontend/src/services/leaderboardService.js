@@ -18,9 +18,31 @@ class LeaderboardService {
   async getGlobalLeaderboard(params = {}) {
     try {
       const response = await api.get('/leaderboard/global', { params });
-      return handleApiResponse(response);
+      const parsed = handleApiResponse(response);
+      const needsMock = () => {
+        if (!parsed?.success) return false;
+        const arr = parsed.data?.users;
+        if (!Array.isArray(arr) || arr.length === 0) return true;
+        // If all entries are zero-like, also mock
+        const allZero = arr.every(u => (!u.score && !u.problemsSolved && !u.streak));
+        return allZero || arr.length < 3;
+      };
+      if (import.meta.env.VITE_USE_MOCKS === 'true' && needsMock()) {
+        const mock = {
+          total: 5,
+          users: [
+            { rank: 1, username: 'Alice', score: 2850, problemsSolved: 145, streak: 21, country: 'USA' },
+            { rank: 2, username: 'Bob', score: 2720, problemsSolved: 132, streak: 18, country: 'India' },
+            { rank: 3, username: 'Charlie', score: 2610, problemsSolved: 127, streak: 12, country: 'UK' },
+            { rank: 4, username: 'Diana', score: 2490, problemsSolved: 116, streak: 9, country: 'Germany' },
+            { rank: 5, username: 'Ethan', score: 2415, problemsSolved: 110, streak: 6, country: 'Canada' },
+          ],
+        };
+        return { success: true, data: mock, status: 200 };
+      }
+      return parsed;
     } catch (error) {
-      if (import.meta.env.VITE_DEV_MODE === 'true') {
+      if (import.meta.env.VITE_USE_MOCKS === 'true') {
         const mock = {
           total: 8,
           users: [
@@ -112,10 +134,16 @@ class LeaderboardService {
   async getLeaderboardStats() {
     try {
       const response = await api.get('/leaderboard/stats');
-      return handleApiResponse(response);
+      const parsed = handleApiResponse(response);
+      if (import.meta.env.VITE_USE_MOCKS === 'true' && (!parsed?.data || !parsed.data.activeCompetitors)) {
+        // Try to infer from mock user count used above
+        const fallback = 5;
+        return { success: true, data: { activeCompetitors: fallback }, status: 200 };
+      }
+      return parsed;
     } catch (error) {
-      if (import.meta.env.VITE_DEV_MODE === 'true') {
-        const mock = { activeCompetitors: 8247 };
+      if (import.meta.env.VITE_USE_MOCKS === 'true') {
+        const mock = { activeCompetitors: 5 };
         return { success: true, data: mock, status: 200 };
       }
       return handleApiError(error);

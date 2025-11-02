@@ -11,6 +11,16 @@ const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activity, setActivity] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+
+  const MOCK_USERS = [
+    { username: 'Alice', stats: { totalSolved: 145, currentStreak: 21, maxStreak: 30, totalScore: 2850, rank: 1, accuracy: 93 } },
+    { username: 'Bob', stats: { totalSolved: 132, currentStreak: 18, maxStreak: 26, totalScore: 2720, rank: 2, accuracy: 90 } },
+    { username: 'Charlie', stats: { totalSolved: 127, currentStreak: 12, maxStreak: 22, totalScore: 2610, rank: 3, accuracy: 88 } },
+    { username: 'Diana', stats: { totalSolved: 116, currentStreak: 9,  maxStreak: 18, totalScore: 2490, rank: 4, accuracy: 86 } },
+    { username: 'Ethan', stats: { totalSolved: 110, currentStreak: 6,  maxStreak: 14, totalScore: 2415, rank: 5, accuracy: 84 } },
+  ];
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -19,11 +29,11 @@ const Profile = () => {
         const res = await authService.getCurrentUser();
         if (res.success) {
           const base = res.data || {};
-          // Merge with defaults for demo stats if backend not present
           const merged = {
             username: base.username || 'john_coder',
             email: base.email || 'john@example.com',
-            joinDate: base.joinDate || '2024-01-15',
+            // Prefer backend's joinedAt, fallback to demo joinDate
+            joinDate: base.joinedAt || base.joinDate || '2024-01-15',
             avatar: null,
             stats: base.stats || {
               totalSolved: 87,
@@ -38,7 +48,12 @@ const Profile = () => {
               { date: '2024-10-16', problem: 'Binary Tree Inorder', difficulty: 'Medium', status: 'solved', time: '32m' },
               { date: '2024-10-15', problem: 'Merge Intervals', difficulty: 'Medium', status: 'attempted', time: '45m' },
               { date: '2024-10-14', problem: 'Valid Parentheses', difficulty: 'Easy', status: 'solved', time: '8m' },
-              { date: '2024-10-13', problem: 'Longest Substring', difficulty: 'Medium', status: 'solved', time: '28m' }
+              { date: '2024-10-13', problem: 'Longest Substring', difficulty: 'Medium', status: 'solved', time: '28m' },
+              { date: '2024-10-12', problem: 'Reverse Linked List', difficulty: 'Easy', status: 'solved', time: '12m' },
+              { date: '2024-10-11', problem: 'Group Anagrams', difficulty: 'Medium', status: 'solved', time: '34m' },
+              { date: '2024-10-10', problem: 'Best Time to Buy and Sell Stock', difficulty: 'Easy', status: 'solved', time: '10m' },
+              { date: '2024-10-09', problem: '3Sum', difficulty: 'Medium', status: 'solved', time: '39m' },
+              { date: '2024-10-08', problem: 'Word Break', difficulty: 'Medium', status: 'solved', time: '41m' },
             ],
             skillProgress: base.skillProgress || {
               'Arrays': 85,
@@ -47,8 +62,39 @@ const Profile = () => {
               'Dynamic Programming': 45,
               'Graphs': 52,
               'Sorting': 90
-            }
+            },
+            languageStats: base.languageStats || {
+              'JavaScript': 26,
+              'Python': 22,
+              'Java': 14,
+              'C++': 9,
+              'Go': 4,
+            },
           };
+          // If backend stats are zero-like, hydrate from mock users for a richer demo
+          const st = merged.stats || {};
+          const zeroLike = (!st.totalSolved && !st.currentStreak && !st.totalScore);
+          if (import.meta.env.VITE_DEV_MODE === 'true' && zeroLike) {
+            const uname = (merged.username || '').toLowerCase();
+            const match = MOCK_USERS.find(u => (u.username || '').toLowerCase() === uname);
+            const key = `upskill:demoStats:${uname || 'anon'}`;
+            try {
+              const cached = localStorage.getItem(key);
+              if (cached) {
+                merged.stats = JSON.parse(cached);
+              } else if (match) {
+                merged.stats = match.stats;
+                localStorage.setItem(key, JSON.stringify(merged.stats));
+              } else {
+                // Deterministic pick: hash username to index
+                const idx = uname ? (Array.from(uname).reduce((a,c)=>a+c.charCodeAt(0),0) % MOCK_USERS.length) : 0;
+                merged.stats = MOCK_USERS[idx].stats;
+                localStorage.setItem(key, JSON.stringify(merged.stats));
+              }
+            } catch (_) {
+              merged.stats = (match ? match.stats : MOCK_USERS[0].stats);
+            }
+          }
           setUserData(merged);
         } else {
           setError(res.error || 'Failed to load profile');
@@ -59,7 +105,28 @@ const Profile = () => {
         setLoading(false);
       }
     };
+
+    // Single fetch only (no auto-refresh) to keep streak stable
     fetchProfile();
+    return () => {};
+  }, []);
+
+  // Load recent activity from backend and auto-refresh
+  useEffect(() => {
+    const fetchActivity = async () => {
+      try {
+        setActivityLoading(true);
+        const res = await authService.getRecentActivity(20);
+        if (res.success && res.data?.activities) {
+          setActivity(res.data.activities);
+        }
+      } finally {
+        setActivityLoading(false);
+      }
+    };
+    // Single fetch only to reduce background requests
+    fetchActivity();
+    return () => {};
   }, []);
 
   const getDifficultyColor = (difficulty) => {
@@ -83,7 +150,6 @@ const Profile = () => {
   const tabs = [
     { id: 'overview', name: 'Overview', icon: User },
     { id: 'activity', name: 'Recent Activity', icon: Calendar },
-    { id: 'skills', name: 'Skills', icon: Target },
     { id: 'settings', name: 'Settings', icon: Settings }
   ];
 
@@ -217,6 +283,7 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
+                {/* Removed Solved Problems and Solved by Language panels per request */}
               </div>
             )}
 
@@ -224,52 +291,39 @@ const Profile = () => {
             {activeTab === 'activity' && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                <div className="space-y-4">
-                  {data.recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="text-sm text-gray-500">
-                          {new Date(activity.date).toLocaleDateString()}
+                {activityLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {(activity.length ? activity : data.recentActivity).map((act, index) => (
+                      <div key={act.id || index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="text-sm text-gray-500">
+                            {new Date(act.date).toLocaleDateString()}
+                          </div>
+                          <div className="font-medium text-gray-900">{act.problem}</div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(act.difficulty)}`}>
+                            {act.difficulty}
+                          </span>
                         </div>
-                        <div className="font-medium text-gray-900">{activity.problem}</div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
-                          {activity.difficulty}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-sm text-gray-600">{activity.time}</div>
-                        <div className={`font-medium ${getStatusColor(activity.status)}`}>
-                          {activity.status}
+                        <div className="flex items-center space-x-4">
+                          <div className="text-sm text-gray-600">{act.time}</div>
+                          <div className={`font-medium ${getStatusColor(act.status)}`}>
+                            {act.status}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Skills Tab */}
-            {activeTab === 'skills' && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Skill Progress</h3>
-                <div className="space-y-4">
-                  {Object.entries(data.skillProgress).map(([skill, progress]) => (
-                    <div key={skill} className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="font-medium text-gray-900">{skill}</span>
-                        <span className="text-sm text-gray-600">{progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Skills tab removed per request */}
 
             {/* Settings Tab */}
             {activeTab === 'settings' && (

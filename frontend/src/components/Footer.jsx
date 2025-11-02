@@ -33,7 +33,7 @@ const Footer = () => {
     { name: 'GitHub', icon: Github, href: 'https://github.com' },
     { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
     { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com' },
-    { name: 'Email', icon: Mail, href: 'mailto:contact@aicodeskill.com' },
+    { name: 'Email', icon: Mail, href: 'mailto:contact@upskill.app' },
   ];
 
   return (
@@ -46,7 +46,7 @@ const Footer = () => {
               <div className="bg-primary-600 p-2 rounded-lg">
                 <Code className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold">AI CodeSkill</span>
+              <span className="text-xl font-bold">UpSkill</span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
               Enhance your coding skills with AI-powered challenges, real-time practice environment, 
@@ -132,7 +132,7 @@ const Footer = () => {
         <div className="mt-8 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © {currentYear} AI CodeSkill. All rights reserved.
+              © {currentYear} UpSkill. All rights reserved.
             </p>
             <p className="text-gray-400 text-sm mt-2 md:mt-0">
               Built with ❤️ for developers by developers

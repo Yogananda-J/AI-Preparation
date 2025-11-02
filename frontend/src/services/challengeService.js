@@ -33,6 +33,19 @@ class ChallengeService {
   }
 
   /**
+   * Get all challenges (for editor navigation)
+   * @returns {Promise<Object>} All challenges list
+   */
+  async getAllChallenges() {
+    try {
+      const response = await api.get('/challenges');
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
    * Get all challenges with pagination and filters
    * @param {Object} params - Query parameters
    * @param {number} params.page - Page number
@@ -157,6 +170,20 @@ class ChallengeService {
   }
 
   /**
+   * Poll a submission status by ID (async pipeline)
+   * @param {string} submissionId
+   * @returns {Promise<Object>} Submission status and details
+   */
+  async getSubmissionStatus(submissionId) {
+    try {
+      const response = await api.get(`/challenges/submissions/${submissionId}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
    * Get challenge statistics
    * @param {string} challengeId - Challenge ID
    * @returns {Promise<Object>} Challenge statistics
@@ -228,6 +255,10 @@ class ChallengeService {
       const response = await api.get(`/challenges/drafts/${challengeId}`);
       return handleApiResponse(response);
     } catch (error) {
+      // If no draft exists, backend returns 404. Treat as empty (not an error for UX).
+      if (error?.response?.status === 404) {
+        return { success: true, data: null, status: 404 };
+      }
       return handleApiError(error);
     }
   }

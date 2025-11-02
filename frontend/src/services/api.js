@@ -7,7 +7,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE || 'http://localhost:5000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -55,8 +55,10 @@ api.interceptors.response.use(
   (error) => {
     // Handle common error scenarios
     if (error.response) {
-      const { status, data } = error.response;
-      
+      const { status, data, config } = error.response;
+      const url = config?.url || '';
+      const msg = data?.message || data?.error || 'Unknown error';
+
       switch (status) {
         case 401:
           // Unauthorized - clear token and redirect to login
@@ -64,32 +66,46 @@ api.interceptors.response.use(
           window.location.href = '/login';
           break;
         case 403:
-          console.error('Access forbidden:', data.message);
+          console.error('Access forbidden:', msg);
           break;
         case 404:
-          console.error('Resource not found:', data.message);
+          // Silence expected 404s for drafts (no draft yet is not an error)
+          if (url.includes('/challenges/drafts/')) {
+            // no log
+          } else {
+            console.warn('Resource not found:', msg, url);
+          }
           break;
         case 500:
-          console.error('Server error:', data.message);
+          console.error('Server error:', msg);
           break;
         default:
-          console.error('API Error:', data.message || 'Unknown error');
+          console.error('API Error:', msg);
       }
     } else if (error.request) {
       console.error('Network error:', error.message);
     } else {
       console.error('Request setup error:', error.message);
     }
-    
+
     return Promise.reject(error);
   }
 );
 
 // Helper function to handle API responses
 export const handleApiResponse = (response) => {
+  const payload = response?.data;
+  // If backend uses an envelope { success, data }, unwrap to inner data for callers
+  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+    return {
+      success: !!payload.success,
+      data: payload.data,
+      status: response.status,
+    };
+  }
   return {
     success: true,
-    data: response.data,
+    data: payload,
     status: response.status,
   };
 };
@@ -98,7 +114,7 @@ export const handleApiResponse = (response) => {
 export const handleApiError = (error) => {
   return {
     success: false,
-    error: error.response?.data?.message || error.message || 'An error occurred',
+    error: error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred',
     status: error.response?.status || 500,
   };
 };

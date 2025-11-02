@@ -1,0 +1,16 @@
+{
+  "name": "ace-worker",
+  "version": "0.1.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "bullmq": "^5.9.1",
+    "ioredis": "^5.4.1",
+    "mongodb": "^6.9.0",
+    "nanoid": "^5.0.7"
+  }
+}

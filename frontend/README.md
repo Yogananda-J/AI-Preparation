@@ -103,7 +103,7 @@ frontend/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js** (v16 or higher)
+- **Node.js** (v18 or higher)
 - **npm** or **yarn**
 
 ### Installation
@@ -131,10 +131,129 @@ frontend/
    ```
 
 5. **Open in browser**
-   ```
-   http://localhost:5173
-   ```
+  ```
+  http://localhost:5173
+  ```
 
+## 🧩 Full-Stack Quickstart (Windows)
+
+This project has a backend (`backend/`) and a frontend (`frontend/`). Follow these steps to run everything locally on Windows PowerShell.
+
+### 1) Prereqs
+- **Node.js 18+** (includes npm). Verify with `node -v` and `npm -v` in a NEW PowerShell window.
+- **MongoDB Community** (local) or a cloud MongoDB URI.
+- Optional for code execution (Judge0):
+  - Docker Desktop (for local Judge0), or
+  - RapidAPI account/key for Judge0 CE.
+
+### 2) Backend setup
+From the project root `AI_PREP/`:
+
+Create `backend/.env` (copy from example and fill values):
+
+```ini
+NODE_ENV=development
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/aicodeskill
+JWT_SECRET=dev_secret_change_me
+CORS_ORIGIN=http://localhost:5173,http://localhost:5174,http://localhost:5175
+API_PREFIX=/api
+
+# Choose ONE Judge0 option
+# Option A: RapidAPI
+# JUDGE0_URL=https://judge0-ce.p.rapidapi.com
+# JUDGE0_RAPIDAPI_KEY=<your_rapidapi_key>
+# JUDGE0_LOG=1
+
+# Option B: Local Judge0 (Docker)
+# JUDGE0_URL=http://localhost:2358
+# JUDGE0_LOG=1
+```
+
+Install and run the backend:
+
+```powershell
+npm install --prefix backend
+npm run dev --prefix backend
+# Expect: API listening on http://localhost:5000/api
+```
+
+MongoDB tips:
+- If MongoDB isn’t running as a Windows service, you can start it manually:
+  ```powershell
+  # One-time data folder
+  mkdir C:\\data\\db -ErrorAction SilentlyContinue | Out-Null
+  # Start mongod (adjust version path if different)
+  Start-Process -FilePath "C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe" -ArgumentList "--dbpath","C:\\data\\db"
+  ```
+
+### 3) Frontend setup
+
+Create `frontend/.env`:
+
+```ini
+VITE_API_BASE_URL=http://localhost:5000/api
+VITE_APP_NAME=AI Coding Skill Enhancer
+VITE_APP_VERSION=1.0.0
+VITE_DEV_MODE=true
+VITE_LOG_LEVEL=debug
+```
+
+Install and run the frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+# Open the printed URL, e.g., http://localhost:5173
+```
+
+### 4) Judge0 options (to get Actual outputs)
+
+- Option A: RapidAPI (no Docker)
+  1. Subscribe to “Judge0 CE” on RapidAPI (free tier ok).
+  2. Set `JUDGE0_URL` and `JUDGE0_RAPIDAPI_KEY` in `backend/.env`.
+  3. Restart the backend.
+
+- Option B: Local Judge0 (Docker)
+  ```powershell
+  docker run -d -p 2358:2358 judge0/judge0:latest
+  ```
+  Set `JUDGE0_URL=http://localhost:2358` in `backend/.env` and restart backend.
+
+### 5) Verify integration
+
+- **CORS**: Ensure your frontend origin(s) exist in `CORS_ORIGIN` and restart backend if edited.
+- **API**: Browser → DevTools → Network → `GET /api/challenges/daily` returns 200.
+- **Run challenge**: Open “Two Sum” and click Run. In `POST /api/challenges/run`, `data.details[].actual` should be populated when Judge0 is working.
+
+## 🧪 Backend Endpoints (quick reference)
+
+- `GET /api/health`
+- `POST /api/auth/register` `{ username, email, password }`
+- `POST /api/auth/login` `{ email, password }`
+- `GET /api/auth/me` (Header: `Authorization: Bearer <token>`)
+
+## 🛠 Troubleshooting
+
+- **Node/npm not found in VS Code terminal**
+  - Cause: VS Code launched before PATH update. Solution: close VS Code and reopen; verify `node -v`, `npm -v` in a new terminal.
+  - Ensure User PATH contains `C:\\Program Files\\nodejs` (and optionally `C:\\Users\\<you>\\AppData\\Roaming\\npm`). As a fallback, run per-terminal: `$env:PATH += ';C:\\Program Files\\nodejs'`.
+
+- **MongoDB connection refused (127.0.0.1:27017)**
+  - Start the Windows service or run `mongod.exe` manually with `--dbpath C:\\data\\db`.
+  - Confirm Compass connection: `mongodb://127.0.0.1:27017`, database `aicodeskill`, collection `users`.
+
+- **CORS blocked**
+  - Add exact frontend origin(s) to `CORS_ORIGIN` in `backend/.env` and restart backend.
+
+- **Judge0 errors / empty Actual outputs**
+  - RapidAPI: verify subscription and `JUDGE0_RAPIDAPI_KEY`.
+  - Docker: ensure the Judge0 container is running and `JUDGE0_URL` points to it.
+
+- **.env changes not applied**
+  - Restart the backend process after editing `backend/.env`.
+  
 ## 💻 Development
 
 ### Development Server

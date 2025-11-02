@@ -20,6 +20,7 @@ const CodeEditor = ({ value, language = 'javascript', onChange, height = '400px'
           scrollBeyondLastLine: false,
           wordWrap: 'on',
           automaticLayout: true,
+          renderValidationDecorations: 'on',
           ...options,
         }}
       />

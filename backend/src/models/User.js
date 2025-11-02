@@ -6,8 +6,10 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     joinedAt: { type: Date, default: Date.now },
+    lastSolvedAt: { type: Date, default: null },
     stats: {
       totalSolved: { type: Number, default: 0 },
+      totalSubmissions: { type: Number, default: 0 },
       currentStreak: { type: Number, default: 0 },
       maxStreak: { type: Number, default: 0 },
       totalScore: { type: Number, default: 0 },

@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./api
+    environment:
+      - PORT=8080
+      - MONGO_URL=mongodb://mongo:27017/ace
+      - REDIS_URL=redis://redis:6379
+      - QUEUE_NAME=submissions
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build: ./worker
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/ace
+      - REDIS_URL=redis://redis:6379
+      - QUEUE_NAME=submissions
+      - PY_RUN_IMAGE=python:3.11-alpine
+      - DEFAULT_TIME_LIMIT_SEC=5
+      - DEFAULT_MEMORY_LIMIT=512m
+    # Allow the worker to launch sibling Docker containers via the host daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - worker-tmp:/tmp
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+  worker-tmp:

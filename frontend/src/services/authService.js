@@ -40,6 +40,19 @@ class AuthService {
   }
 
   /**
+   * Get detailed submission logs for the authenticated user
+   * @param {number} limit - Number of logs to fetch
+   */
+  async getSubmissionLogs(limit = 50) {
+    try {
+      const response = await api.get('/profile/submissions', { params: { limit } });
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
    * User registration
    * @param {Object} userData - User registration data
    * @param {string} userData.username - Username
@@ -204,6 +217,23 @@ class AuthService {
       const response = await api.post('/auth/reset-password', resetData);
       return handleApiResponse(response);
     } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  async getRecentActivity(limit = 20) {
+    try {
+      const response = await api.get('/profile/activity', { params: { limit } });
+      return handleApiResponse(response);
+    } catch (error) {
+      if (import.meta.env.VITE_DEV_MODE === 'true') {
+        const mock = {
+          activities: [
+            { id: 'a1', date: new Date().toISOString(), problem: 'Two Sum', difficulty: 'Easy', status: 'solved', time: '15m' },
+          ]
+        };
+        return { success: true, data: mock, status: 200 };
+      }
       return handleApiError(error);
     }
   }

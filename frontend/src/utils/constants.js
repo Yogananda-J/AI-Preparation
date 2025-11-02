@@ -268,11 +268,11 @@ export const SUCCESS_MESSAGES = {
 
 // Application Metadata
 export const APP_METADATA = {
-  NAME: 'AI CodeSkill',
-  DESCRIPTION: 'AI-Based Coding Skill Enhancer & Interview Prep',
+  NAME: 'UpSkill',
+  DESCRIPTION: 'AI-powered practice and mock interviews',
   VERSION: '1.0.0',
-  AUTHOR: 'AI CodeSkill Team',
-  CONTACT_EMAIL: 'contact@aicodeskill.com',
-  GITHUB_URL: 'https://github.com/aicodeskill',
-  DOCUMENTATION_URL: 'https://docs.aicodeskill.com',
+  AUTHOR: 'UpSkill Team',
+  CONTACT_EMAIL: 'contact@upskill.app',
+  GITHUB_URL: 'https://github.com/upskill-app',
+  DOCUMENTATION_URL: 'https://docs.upskill.app',
 };

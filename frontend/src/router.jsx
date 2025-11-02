@@ -27,6 +27,10 @@ const router = createBrowserRouter([
         element: <Challenge />,
       },
       {
+        path: 'challenges/:id?',
+        element: <Challenge />,
+      },
+      {
         path: 'leaderboard',
         element: <Leaderboard />,
       },
