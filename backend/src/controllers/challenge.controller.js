@@ -90,10 +90,17 @@ const ensureSeeded = async () => {
   const lcPath = path.resolve(__dirname, '../data/challenges.seed.lc.json');
   const legacyPath = path.resolve(__dirname, '../data/challenges.seed.json');
   const mergedPath = path.resolve(__dirname, '../data/merged_problems.json');
+  const mergedSubsetPath = path.resolve(__dirname, '../data/merged_subset.json');
   const chosenPath = existsSync(lcPath) ? lcPath : legacyPath;
   let rawItems = [];
   try {
-    if (existsSync(mergedPath)) {
+    // Prefer a curated subset if present (merged_subset.json)
+    if (existsSync(mergedSubsetPath)) {
+      const rawMerged = readFileSync(mergedSubsetPath, 'utf-8');
+      const merged = JSON.parse(rawMerged);
+      if (merged && Array.isArray(merged.questions)) rawItems = merged.questions;
+    }
+    if ((!rawItems || !rawItems.length) && existsSync(mergedPath)) {
       const rawMerged = readFileSync(mergedPath, 'utf-8');
       const merged = JSON.parse(rawMerged);
       if (merged && Array.isArray(merged.questions)) rawItems = merged.questions;
