@@ -6,6 +6,7 @@ import {
   getDailyChallenges,
   getChallengeById,
   runCode,
+  previewSource,
   saveDraft,
   getDraft,
   submitSolution,
@@ -25,6 +26,9 @@ router.get('/:id', getChallengeById);
 
 // Run code (simulate execution)
 router.post('/run', runCode);
+
+// Debug: preview composed source for first example
+router.post('/preview', previewSource);
 
 // Submit solution (updates user stats)
 router.post('/submit', requireAuth, submitSolution);

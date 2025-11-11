@@ -63,8 +63,8 @@ async function runJava({ source, stdin, timeLimitSec }) {
     '-e',`CODE_B64=${codeB64}`,
     JAVA_IMAGE,
     'sh','-lc',
-    // decode to /tmp/Main.java, compile, then run TestRunner if present, else Main
-    `echo "$CODE_B64" | base64 -d > /tmp/Main.java && cd /tmp && javac Main.java && (timeout ${timeLimitSec}s java TestRunner || timeout ${timeLimitSec}s java Main)`
+  // decode to /tmp/Main.java, compile, then run Main directly (avoid looking for TestRunner)
+  `echo "$CODE_B64" | base64 -d > /tmp/Main.java && cd /tmp && javac Main.java && timeout ${timeLimitSec}s java Main`
   ];
   return docker(cmd, { stdin });
 }
