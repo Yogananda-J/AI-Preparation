@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI_PREP - Project Synopsis</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        h4 {
+            color: #666;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+        p {
+            text-align: justify;
+            margin-bottom: 12px;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        strong {
+            color: #2c3e50;
+        }
+        .executive-summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        .section {
+            page-break-inside: avoid;
+            margin-bottom: 25px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            font-size: 0.9em;
+            color: #777;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>AI_PREP - Project Synopsis</h1>
+    
+    <div class="executive-summary">
+        <h2>Executive Summary</h2>
+        <p>AI_PREP is a comprehensive AI-powered coding interview and practice platform designed to revolutionize technical interview preparation for developers and job seekers. The platform integrates advanced code execution services with AI-driven interview simulations to provide a complete, end-to-end solution for technical skill enhancement and interview readiness. By combining interactive coding challenges, real-time code execution, AI-powered mock interviews, and comprehensive performance analytics, AI_PREP addresses the critical need for effective technical interview preparation in today's competitive job market.</p>
+        <p>The platform serves multiple stakeholders including job seekers preparing for technical interviews, educators conducting interview preparation courses, and companies screening and evaluating technical candidates. With its scalable microservices architecture, secure code execution environment, and AI-powered evaluation system, AI_PREP provides a robust, secure, and user-friendly platform for technical interview preparation.</p>
+    </div>
+
+    <div class="section">
+        <h2>1. Introduction</h2>
+        <h3>1.1 Background</h3>
+        <p>The technology industry continues to experience rapid growth, with an increasing demand for skilled software developers, data scientists, and technical professionals. However, the technical interview process remains one of the most challenging aspects of job hunting for many candidates. Traditional preparation methods often lack the interactive, real-time feedback and comprehensive evaluation that candidates need to succeed.</p>
+        <p>Technical interviews typically involve coding challenges, system design questions, behavioral assessments, and technical discussions. Candidates must demonstrate not only technical proficiency but also problem-solving abilities, communication skills, and the ability to work under pressure. Existing preparation platforms often focus on either coding practice or interview simulation, but rarely combine both in an integrated, AI-powered solution.</p>
+        
+        <h3>1.2 Problem Statement</h3>
+        <p>Current technical interview preparation suffers from several limitations:</p>
+        <ol>
+            <li><strong>Fragmented Preparation</strong>: Candidates must use multiple platforms for coding practice, interview simulation, and skill assessment, leading to a disjointed learning experience.</li>
+            <li><strong>Lack of Real-Time Feedback</strong>: Traditional preparation methods don't provide immediate, actionable feedback on coding solutions, interview performance, or communication skills.</li>
+            <li><strong>Limited Personalization</strong>: Most platforms offer generic challenges and questions without considering the candidate's target role, experience level, or specific skill gaps.</li>
+            <li><strong>Inadequate Interview Simulation</strong>: Mock interview platforms often lack the sophistication to evaluate non-technical skills such as communication, problem-solving approach, and presentation.</li>
+            <li><strong>Security Concerns</strong>: Code execution platforms may not provide adequate isolation and security for running untrusted user code.</li>
+            <li><strong>Scalability Issues</strong>: Existing solutions may not scale effectively to handle large numbers of concurrent users and code executions.</li>
+        </ol>
+        
+        <h3>1.3 Solution Overview</h3>
+        <p>AI_PREP addresses these challenges by providing:</p>
+        <ul>
+            <li><strong>Integrated Platform</strong>: A single platform combining coding challenges, interview simulation, and performance analytics</li>
+            <li><strong>Real-Time Execution</strong>: Secure, isolated code execution with immediate feedback</li>
+            <li><strong>AI-Powered Evaluation</strong>: Intelligent question generation and performance analysis based on role and experience level</li>
+            <li><strong>Comprehensive Analytics</strong>: Detailed insights into coding skills, interview performance, and areas for improvement</li>
+            <li><strong>Secure Architecture</strong>: Docker-based isolated execution environments with robust security measures</li>
+            <li><strong>Scalable Design</strong>: Microservices architecture supporting high concurrency and load</li>
+        </ul>
+    </div>
+
+    <div class="section page-break">
+        <h2>2. Objectives</h2>
+        <h3>2.1 Primary Objectives</h3>
+        <ol>
+            <li><strong>Develop a Comprehensive Coding Practice Platform</strong>: Create an extensive library of coding challenges covering algorithms, data structures, system design, and domain-specific problems.</li>
+            <li><strong>Implement Secure Code Execution</strong>: Build a secure, scalable code execution service using Docker containers with proper isolation, resource limits, and security constraints.</li>
+            <li><strong>Create AI-Powered Interview System</strong>: Develop an intelligent interview simulation system that generates role-specific questions and evaluates candidate performance.</li>
+            <li><strong>Provide Real-Time Analytics</strong>: Implement comprehensive analytics and reporting for both coding performance and interview metrics.</li>
+            <li><strong>Ensure Platform Scalability</strong>: Design and implement a scalable architecture that can handle large numbers of concurrent users and code executions.</li>
+        </ol>
+        
+        <h3>2.2 Secondary Objectives</h3>
+        <ol>
+            <li><strong>Support Multiple Programming Languages</strong>: Enable code execution in multiple languages including JavaScript, Python, Java, and C++.</li>
+            <li><strong>Implement User Progress Tracking</strong>: Provide detailed tracking of user progress, streaks, accuracy, and performance over time.</li>
+            <li><strong>Create Leaderboard System</strong>: Implement a competitive leaderboard to encourage user engagement and motivation.</li>
+            <li><strong>Develop Draft Management</strong>: Enable users to save work in progress and resume later.</li>
+            <li><strong>Integrate Resume Analysis</strong>: Allow users to upload resumes for personalized interview experiences.</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>3. Features and Functionality</h2>
+        <h3>3.1 Coding Challenges Platform</h3>
+        <h4>3.1.1 Challenge Library</h4>
+        <ul>
+            <li><strong>Extensive Problem Set</strong>: Hundreds of coding problems ranging from beginner to advanced levels</li>
+            <li><strong>Category Organization</strong>: Problems organized by difficulty, topic, and domain</li>
+            <li><strong>Daily Challenges</strong>: Curated daily challenges to maintain consistent practice</li>
+            <li><strong>Problem Details</strong>: Comprehensive problem descriptions with examples, constraints, and hints</li>
+        </ul>
+        
+        <h4>3.1.2 Code Execution</h4>
+        <ul>
+            <li><strong>Multi-Language Support</strong>: Execute code in JavaScript, Python, Java, and C++</li>
+            <li><strong>Real-Time Execution</strong>: Instant code execution with immediate results</li>
+            <li><strong>Test Case Validation</strong>: Comprehensive test case execution with detailed feedback</li>
+            <li><strong>Execution Metrics</strong>: Track execution time, memory usage, and resource consumption</li>
+            <li><strong>Error Handling</strong>: Detailed error messages and debugging information</li>
+        </ul>
+        
+        <h3>3.2 AI-Powered Mock Interviews</h3>
+        <h4>3.2.1 Interview Configuration</h4>
+        <ul>
+            <li><strong>Role Selection</strong>: Choose from Software Engineer, Data Scientist, Product Manager, and other technical roles</li>
+            <li><strong>Experience Level</strong>: Select experience level (Entry-Level, Mid-Level, Senior)</li>
+            <li><strong>Question Types</strong>: Configure question types including MCQ, Behavioral, Technical, and System Design</li>
+            <li><strong>Duration Settings</strong>: Set interview duration (30, 45, or 60 minutes)</li>
+            <li><strong>Question Count</strong>: Specify number of questions (20, 25, or 30)</li>
+        </ul>
+        
+        <h4>3.2.2 Question Generation</h4>
+        <ul>
+            <li><strong>AI-Driven Selection</strong>: Intelligent question selection based on role, experience level, and topics</li>
+            <li><strong>Role-Specific Questions</strong>: Questions tailored to the selected role and job requirements</li>
+            <li><strong>Difficulty Adjustment</strong>: Adaptive difficulty based on user performance</li>
+            <li><strong>Question Bank</strong>: Extensive database of questions for each role and category</li>
+        </ul>
+        
+        <h4>3.2.3 Real-Time Evaluation</h4>
+        <ul>
+            <li><strong>Audio Analysis</strong>: Real-time speech recognition and analysis</li>
+            <li><strong>Video Analysis</strong>: Facial expression recognition and eye contact tracking</li>
+            <li><strong>Metrics Tracking</strong>: Live tracking of speaking pace (WPM), filler words, pauses, and engagement</li>
+            <li><strong>Content Evaluation</strong>: Analysis of answer content, relevance, and technical accuracy</li>
+            <li><strong>Delivery Assessment</strong>: Evaluation of communication skills, confidence, and presentation</li>
+        </ul>
+    </div>
+
+    <div class="section page-break">
+        <h2>4. Technical Architecture</h2>
+        <h3>4.1 System Architecture</h3>
+        <p>AI_PREP follows a microservices-based architecture with clear separation of concerns:</p>
+        
+        <h4>4.1.1 Frontend Layer</h4>
+        <ul>
+            <li><strong>React 19</strong>: Modern React with latest features and performance improvements</li>
+            <li><strong>Vite 7</strong>: Lightning-fast build tool and development server</li>
+            <li><strong>React Router</strong>: Client-side routing for seamless navigation</li>
+            <li><strong>TailwindCSS</strong>: Utility-first CSS framework for responsive design</li>
+            <li><strong>Monaco Editor</strong>: Feature-rich code editor with syntax highlighting</li>
+            <li><strong>WebSocket Client</strong>: Real-time communication for interview features</li>
+        </ul>
+        
+        <h4>4.1.2 Backend Layer</h4>
+        <ul>
+            <li><strong>Express.js</strong>: Robust RESTful API server</li>
+            <li><strong>MongoDB</strong>: NoSQL database for data persistence</li>
+            <li><strong>Mongoose</strong>: Object Data Modeling for MongoDB</li>
+            <li><strong>JWT Authentication</strong>: Secure token-based authentication</li>
+            <li><strong>WebSocket Server</strong>: Real-time bidirectional communication</li>
+            <li><strong>Middleware Stack</strong>: CORS, Helmet security, Morgan logging</li>
+        </ul>
+        
+        <h4>4.1.3 Service Layer</h4>
+        <ul>
+            <li><strong>ACE Service</strong>: Docker-based code execution service</li>
+            <li><strong>ML Service</strong>: Python FastAPI service for interview features</li>
+            <li><strong>Redis/BullMQ</strong>: Job queue management for asynchronous processing</li>
+            <li><strong>MongoDB</strong>: Data persistence for submissions and sessions</li>
+        </ul>
+        
+        <h3>4.2 Code Execution Architecture</h3>
+        <h4>4.2.1 ACE Service</h4>
+        <ul>
+            <li><strong>API Service</strong>: REST API for submission management</li>
+            <li><strong>Worker Service</strong>: Code execution in isolated Docker containers</li>
+            <li><strong>Job Queue</strong>: Redis/BullMQ for asynchronous job processing</li>
+            <li><strong>MongoDB</strong>: Storage for submission records and results</li>
+        </ul>
+        
+        <h4>4.2.2 Security Measures</h4>
+        <ul>
+            <li><strong>Container Isolation</strong>: Each code execution runs in an isolated Docker container</li>
+            <li><strong>Network Isolation</strong>: Containers have no network access</li>
+            <li><strong>Resource Limits</strong>: CPU, memory, and time limits on executions</li>
+            <li><strong>Read-Only Filesystem</strong>: Containers use read-only root filesystem</li>
+            <li><strong>PID Limits</strong>: Process ID limits to prevent fork bombs</li>
+            <li><strong>Security Options</strong>: No new privileges, restricted capabilities</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>5. Implementation Details</h2>
+        <h3>5.1 Technology Stack</h3>
+        <h4>5.1.1 Frontend Technologies</h4>
+        <ul>
+            <li>React 19, Vite 7, React Router 7, TailwindCSS 3, Monaco Editor, Axios, Lucide React</li>
+        </ul>
+        
+        <h4>5.1.2 Backend Technologies</h4>
+        <ul>
+            <li>Node.js 18+, Express 5, MongoDB, Mongoose 8, JWT, Bcryptjs, WebSocket (ws), Zod</li>
+        </ul>
+        
+        <h4>5.1.3 Service Technologies</h4>
+        <ul>
+            <li>Docker, Docker Compose, Python 3.9+, FastAPI, Redis, BullMQ, MongoDB</li>
+        </ul>
+        
+        <h3>5.2 Security Implementation</h3>
+        <ul>
+            <li><strong>Authentication Security</strong>: JWT tokens, password hashing with Bcrypt, token expiration, CORS protection</li>
+            <li><strong>Code Execution Security</strong>: Container isolation, network isolation, resource limits, file system restrictions</li>
+            <li><strong>Data Security</strong>: Input validation, SQL injection prevention, XSS protection, data encryption</li>
+        </ul>
+    </div>
+
+    <div class="section page-break">
+        <h2>6. Use Cases</h2>
+        <h3>6.1 Job Seekers</h3>
+        <ul>
+            <li>Practice coding problems to prepare for technical interviews</li>
+            <li>Participate in mock interviews to improve interview skills</li>
+            <li>Assess technical skills through coding challenges</li>
+            <li>Track progress and identify areas for improvement</li>
+        </ul>
+        
+        <h3>6.2 Educators</h3>
+        <ul>
+            <li>Create and assign coding challenges to students</li>
+            <li>Conduct mock interviews for interview preparation courses</li>
+            <li>Monitor student progress and performance</li>
+            <li>Use platform for technical assessments</li>
+        </ul>
+        
+        <h3>6.3 Companies</h3>
+        <ul>
+            <li>Screen candidates through coding challenges</li>
+            <li>Conduct technical interviews with AI-powered evaluation</li>
+            <li>Assess technical talent through coding challenges</li>
+            <li>Make informed hiring decisions based on data</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>7. Future Scope and Enhancements</h2>
+        <h3>7.1 Planned Features</h3>
+        <ul>
+            <li>Expand ACE service to support more programming languages (JavaScript, C++, Go, Rust)</li>
+            <li>Implement real ASR (Automatic Speech Recognition) integration</li>
+            <li>Implement real FER (Facial Expression Recognition) integration</li>
+            <li>Add more detailed performance analytics</li>
+            <li>Implement predictive analytics for interview success</li>
+            <li>Add real-time collaboration on coding challenges</li>
+            <li>Implement peer code review functionality</li>
+        </ul>
+        
+        <h3>7.2 Technical Improvements</h3>
+        <ul>
+            <li>Implement horizontal scaling for all services</li>
+            <li>Add load balancing for high traffic</li>
+            <li>Implement database sharding for large datasets</li>
+            <li>Implement code execution result caching</li>
+            <li>Add comprehensive error handling and retry mechanisms</li>
+        </ul>
+    </div>
+
+    <div class="section page-break">
+        <h2>8. Conclusion</h2>
+        <p>AI_PREP represents a comprehensive solution to the challenges of technical interview preparation, combining advanced code execution services with AI-powered interview simulations to provide a complete, integrated platform for skill enhancement and interview readiness. With its scalable architecture, secure execution environment, and comprehensive analytics, AI_PREP empowers developers to excel in technical interviews through practice, preparation, and performance analysis.</p>
+        
+        <p>The platform's modular design, extensive feature set, and commitment to user experience make it an ideal choice for individuals, educators, and organizations looking to enhance technical interviewing skills. As the platform continues to evolve with new features and enhancements, it will remain at the forefront of technical interview preparation technology, helping developers achieve their career goals and succeed in the competitive job market.</p>
+        
+        <h3>8.1 Key Achievements</h3>
+        <ul>
+            <li><strong>Integrated Platform</strong>: Successfully combined coding challenges and interview preparation in a single platform</li>
+            <li><strong>Secure Execution</strong>: Implemented secure, isolated code execution with Docker containers</li>
+            <li><strong>AI-Powered Evaluation</strong>: Developed intelligent interview evaluation system with real-time analytics</li>
+            <li><strong>Scalable Architecture</strong>: Built scalable microservices architecture supporting high concurrency</li>
+            <li><strong>Comprehensive Analytics</strong>: Implemented detailed performance tracking and analytics</li>
+        </ul>
+        
+        <h3>8.2 Impact</h3>
+        <p>AI_PREP has the potential to significantly impact technical interview preparation by improving success rates, reducing preparation time, enhancing skills, supporting education, and streamlining hiring processes.</p>
+        
+        <h3>8.3 Future Vision</h3>
+        <p>The future of AI_PREP includes continued innovation in AI-powered evaluation, expanded language support, enhanced analytics, and deeper integrations with industry tools and platforms. As the platform grows, it will continue to serve as a leading solution for technical interview preparation, helping developers worldwide achieve their career aspirations and succeed in the technology industry.</p>
+    </div>
+
+    <div class="footer">
+        <p><strong>Project Title</strong>: AI_PREP</p>
+        <p><strong>Project Type</strong>: AI-Powered Coding Interview and Practice Platform</p>
+        <p><strong>Technology Stack</strong>: React, Node.js, MongoDB, Docker, Python, FastAPI</p>
+        <p><strong>Target Users</strong>: Job Seekers, Educators, Companies</p>
+        <p><strong>Status</strong>: Active Development | <strong>Version</strong>: 1.0.0</p>
+    </div>
+</body>
+</html>
+

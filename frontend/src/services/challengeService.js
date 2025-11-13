@@ -121,7 +121,7 @@ class ChallengeService {
    */
   async runCode(testRun) {
     try {
-      const response = await api.post('/challenges/run', testRun);
+      const response = await api.post('/challenges/run', testRun, { timeout: 60000 });
       return handleApiResponse(response);
     } catch (error) {
       if (import.meta.env.VITE_DEV_MODE === 'true') {
