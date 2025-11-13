@@ -560,6 +560,8 @@ const funcCandidates = (title = '') => {
     'zigzag conversion': ['convert', 'zigzagConvert', 'zigzag_conversion'],
     'regular expression matching': ['isMatch', 'is_match', 'regexMatch', 'regex_match'],
     'reverse integer': ['reverse', 'reverseInteger', 'reverse_integer'],
+    'rotate image': ['rotate', 'rotateImage', 'rotate_image'],
+    'remove nth node from end of list': ['removeNthFromEnd', 'removeNthNodeFromEndOfList', 'remove_nth_from_end', 'remove_nth_node_from_end_of_list'],
     'longest substring without repeating characters': ['lengthOfLongestSubstring', 'length_of_longest_substring'],
     'longest palindromic substring': ['longestPalindrome', 'longest_palindromic_substring'],
     'valid parentheses': ['isValid','validParentheses'],
@@ -573,6 +575,8 @@ const funcCandidates = (title = '') => {
   });
   // Also add snake_case variant of primary
   add(primary.replace(/[A-Z]/g, (c) => '_' + c.toLowerCase()));
+  // Add a very common generic name used by many stubs
+  add('solve');
   return Array.from(m.keys());
 };
 
@@ -582,36 +586,107 @@ const buildGenericHarness = {
     const cand = funcCandidates(title);
     // Prepare arguments in order of fields
     const args = fields.map(f => f.name).join(', ');
-    // Convert field values into Java literals (simple heuristics)
+    // For array-like inputs, support: 1D int[], 1D String[], and 2D int[][].
+    // Build ListNode only for 1D numeric arrays and when no 2D arrays are present.
+    const isArr = (s) => /^\[.*\]$/.test((s||'').toString().trim());
+    const isStrArr = (s) => {
+      const v = (s||'').toString().trim();
+      return /^\[.*\]$/.test(v) && /"/.test(v);
+    };
+    const isNumArr = (s) => {
+      const v = (s||'').toString().trim();
+      return /^\[.*\]$/.test(v) && !/"/.test(v);
+    };
+    const is2D = (s) => /^\s*\[\s*\[/.test((s||'').toString().trim());
+    const any2D = fields.some(f => is2D(f.value));
+    const needsList = !any2D && fields.some(f => isNumArr(f.value));
+    const java2DHelper = any2D ? `class J { static String ser2D(int[][] m){ StringBuilder sb=new StringBuilder("["); for(int i=0;i<m.length;i++){ if(i>0) sb.append(','); sb.append('['); for(int j=0;j<m[i].length;j++){ if(j>0) sb.append(','); sb.append(m[i][j]); } sb.append(']'); } sb.append(']'); return sb.toString(); } }\n` : '';
+    const listHelpers = needsList ? `class LL { 
+  static Object build(Class<?> LNC, int[] a){
+    try{
+      java.lang.reflect.Constructor<?> cons = null;
+      for (java.lang.reflect.Constructor<?> c : LNC.getDeclaredConstructors()) {
+        Class<?>[] ps = c.getParameterTypes();
+        if (ps.length == 0 || (ps.length==1 && (ps[0]==int.class || ps[0]==Integer.class))) { cons = c; break; }
+      }
+      Object dummy = LNC.getDeclaredConstructor().newInstance();
+      java.lang.reflect.Field nextF = LNC.getDeclaredField("next");
+      nextF.setAccessible(true);
+      java.lang.reflect.Field valF = null;
+      try { valF = LNC.getDeclaredField("val"); valF.setAccessible(true); } catch(Throwable __miss) {}
+      Object cur = dummy;
+      for (int x : a) {
+        Object node;
+        try { node = LNC.getDeclaredConstructor(int.class).newInstance(x); }
+        catch(Throwable __alt){ node = LNC.getDeclaredConstructor().newInstance(); if (valF!=null) valF.set(node, Integer.valueOf(x)); }
+        nextF.set(cur, node);
+        cur = node;
+      }
+      return nextF.get(dummy);
+    } catch(Throwable __e){ return null; }
+  }
+  static String ser(Object h){
+    if (h == null) return "[]";
+    try{
+      Class<?> LNC = h.getClass();
+      java.lang.reflect.Field nextF = LNC.getDeclaredField("next"); nextF.setAccessible(true);
+      java.lang.reflect.Field valF = null; try { valF = LNC.getDeclaredField("val"); valF.setAccessible(true); } catch(Throwable __miss) {}
+      StringBuilder sb=new StringBuilder("["); boolean first=true; Object cur=h; 
+      while(cur!=null){ if(!first) sb.append(','); first=false; Object v = (valF!=null? valF.get(cur) : null); sb.append(String.valueOf(v)); cur = nextF.get(cur); }
+      sb.append(']'); return sb.toString();
+    } catch(Throwable __e){ return String.valueOf(h); }
+  }
+}
+` : '';
+    // Declarations: build variables per type
     const assigns = fields.map(f => {
       const v = (f.value || '').toString().trim();
-      if (/^\[.*\]$/.test(v)) {
-        return `int[] ${f.name} = new int[]{${v.replace(/^\s*\[|\]\s*$/g, '')}};`;
+      if (is2D(v)) {
+        const cleaned = v.replace(/\s+/g,'');
+        const javaInit = cleaned.replace(/^\[\[/,'{{').replace(/\]\]$/,'}}').replace(/\],\[/g,'},{');
+        return `int[][] ${f.name} = new int[][]${javaInit};`;
+      }
+      if (isNumArr(v)) {
+        const arrInit = v.replace(/^\s*\[|\]\s*$/g, '');
+        return `int[] ${f.name}_arr = new int[]{${arrInit}};`;
+      }
+      if (isStrArr(v)) {
+        const arrInit = v.replace(/^\s*\[|\]\s*$/g, '');
+        return `String[] ${f.name} = new String[]{${arrInit}};`;
       }
       if (/^-?\d+$/.test(v)) return `int ${f.name} = ${v};`;
       if (/^(true|false)$/i.test(v)) return `boolean ${f.name} = ${v.toLowerCase()};`;
       const unquoted = v.replace(/^"|"$/g, '');
       return `String ${f.name} = "${unquoted.replace(/"/g, '\\"')}";`;
     }).join('\n    ');
-    // Build param type literals and value expressions from fields
-    const typeLits = fields.map(f => {
+    // Type/value pairs A: use primitive/array/string as-is (arrays -> int[] using <name>_arr)
+    const typeLitsA = fields.map(f => {
       const v = (f.value || '').toString().trim();
-      if (/^\[.*\]$/.test(v)) return 'int[].class';
+      if (is2D(v)) return 'int[][].class';
+      if (isNumArr(v)) return 'int[].class';
+      if (isStrArr(v)) return 'String[].class';
       if (/^-?\d+$/.test(v)) return 'int.class';
       if (/^(true|false)$/i.test(v)) return 'boolean.class';
       return 'String.class';
     }).join(', ');
-    const valExprs = fields.map(f => {
+    const valExprsA = fields.map(f => {
       const v = (f.value || '').toString().trim();
-      if (/^\[.*\]$/.test(v)) return f.name;
+      if (is2D(v)) return `${f.name}`;
+      if (isNumArr(v)) return `${f.name}_arr`;
+      if (isStrArr(v)) return `${f.name}`;
       if (/^-?\d+$/.test(v)) return `Integer.valueOf(${f.name})`;
       if (/^(true|false)$/i.test(v)) return `Boolean.valueOf(${f.name})`;
       return f.name;
     }).join(', ');
+    // types/values B will be constructed at runtime using resolved LNC
 
     const namesArr = JSON.stringify(cand);
     const namesArrJava = `new String[]{ ${cand.map(n => '"' + String(n).replace(/"/g, '\\"') + '"').join(', ')} }`;
     const bodyLines = [];
+    if (java2DHelper) bodyLines.push(java2DHelper);
+    // Helper to JSON-quote strings safely in Java generation (uses char literals to avoid fragile escapes)
+    bodyLines.push(`class Q { static String q(String s){ StringBuilder sb=new StringBuilder(); sb.append((char)34); for (int i=0;i<s.length();i++){ char c=s.charAt(i); if (c=='\\' || c=='"') sb.append('\\'); sb.append(c); } sb.append((char)34); return sb.toString(); } }`);
+    if (listHelpers) bodyLines.push(listHelpers);
     if (assigns) bodyLines.push(assigns);
     bodyLines.push(`    try {
       Object out = null;
@@ -619,15 +694,31 @@ const buildGenericHarness = {
       Object sol = null;
       try { sol = solCls.getDeclaredConstructor().newInstance(); } catch (Throwable __inst) { sol = null; }
       String[] __names = ${namesArrJava};
-      Class<?>[] __types = new Class<?>[]{ ${typeLits} };
-      Object[] __vals = new Object[]{ ${valExprs} };
+      Class<?>[] __typesA = new Class<?>[]{ ${typeLitsA} };
+      Object[] __valsA = new Object[]{ ${valExprsA} };
+      ${(!any2D && needsList) ? `// Resolve user's ListNode class if present (only for 1D LL problems)
+      Class<?> LNC = null; try { LNC = Class.forName("ListNode"); } catch(Throwable __e1){ try { LNC = Class.forName("Solution$ListNode"); } catch(Throwable __e2){ LNC = null; } }
+      // Build B types/values dynamically
+      Class<?>[] __typesB = (LNC!=null) ? new Class<?>[]{ LNC${fields.filter(f=>!isNumArr(f.value)).map(f=>`, ${/^-?\d+$/.test((f.value||'').toString().trim())?'int.class': (/^(true|false)$/i.test((f.value||'').toString().trim())?'boolean.class':'String.class')}`).join('')} } : new Class<?>[]{};
+      Object[] __valsB = (LNC!=null) ? new Object[]{ ${fields.map(f=>{
+        const v=(f.value||'').toString().trim();
+        if (isNumArr(v)) return `LL.build(LNC, ${f.name}_arr)`;
+        if (/^-?\d+$/.test(v)) return `Integer.valueOf(${f.name})`;
+        if (/^(true|false)$/i.test(v)) return `Boolean.valueOf(${f.name})`;
+        return f.name;
+      }).join(', ')} } : new Object[]{};` : `Class<?> LNC = null; Class<?>[] __typesB = new Class<?>[]{}; Object[] __valsB = new Object[]{};`}
       for (int __i = 0; __i < __names.length && out == null; __i++) {
         String __nm = __names[__i];
         try {
           java.lang.reflect.Method m = null;
-          try { m = solCls.getMethod(__nm, __types); } catch (NoSuchMethodException __e1) { try { m = solCls.getDeclaredMethod(__nm, __types); m.setAccessible(true); } catch (Throwable __e2) { m = null; } }
-          if (m != null) {
-            out = sol != null ? m.invoke(sol, __vals) : m.invoke(null, __vals);
+          // Try signature A
+          try { m = solCls.getMethod(__nm, __typesA); } catch (NoSuchMethodException __e1) { try { m = solCls.getDeclaredMethod(__nm, __typesA); m.setAccessible(true); } catch (Throwable __e2) { m = null; } }
+          if (m != null) { out = sol != null ? m.invoke(sol, __valsA) : m.invoke(null, __valsA); }
+          // Try signature B if still null
+          if (out == null) {
+            m = null;
+            try { m = solCls.getMethod(__nm, __typesB); } catch (NoSuchMethodException __e3) { try { m = solCls.getDeclaredMethod(__nm, __typesB); m.setAccessible(true); } catch (Throwable __e4) { m = null; } }
+            if (m != null) { out = sol != null ? m.invoke(sol, __valsB) : m.invoke(null, __valsB); }
           }
         } catch (Throwable __call) { /* try next */ }
       }
@@ -640,26 +731,25 @@ const buildGenericHarness = {
               for (java.lang.reflect.Method m : __methods) {
                 if (!m.getName().equals(__nm)) continue;
                 Class<?>[] pts = m.getParameterTypes();
-                if (pts.length != __types.length) continue;
+                // Match either A or B arity
+                if (pts.length != __typesA.length) continue;
                 boolean ok = true;
-                Class<?>[] boxed = new Class<?>[__types.length];
-                for (int i = 0; i < __types.length; i++) {
+                for (int i = 0; i < __typesA.length; i++) {
                   Class<?> a = pts[i];
-                  Class<?> b = __types[i];
+                  Class<?> b = __typesA[i];
                   if (a.isPrimitive()) {
                     if (a == int.class) a = Integer.class; else if (a == boolean.class) a = Boolean.class; else if (a == long.class) a = Long.class; else if (a == double.class) a = Double.class; else if (a == float.class) a = Float.class; else if (a == char.class) a = Character.class; else if (a == byte.class) a = Byte.class; else if (a == short.class) a = Short.class;
                   }
                   if (b.isPrimitive()) {
                     if (b == int.class) b = Integer.class; else if (b == boolean.class) b = Boolean.class; else if (b == long.class) b = Long.class; else if (b == double.class) b = Double.class; else if (b == float.class) b = Float.class; else if (b == char.class) b = Character.class; else if (b == byte.class) b = Byte.class; else if (b == short.class) b = Short.class;
                   }
-                  boxed[i] = b;
                   if (!a.isAssignableFrom(b)) { ok = false; break; }
                 }
                 if (!ok) continue;
                 try {
                   m.setAccessible(true);
                   boolean isStatic = java.lang.reflect.Modifier.isStatic(m.getModifiers());
-                  out = isStatic ? m.invoke(null, __vals) : (sol != null ? m.invoke(sol, __vals) : null);
+                  out = isStatic ? m.invoke(null, __valsA) : (sol != null ? m.invoke(sol, __valsA) : null);
                   if (out != null || isStatic) break;
                 } catch (Throwable __ignore) { /* try next */ }
               }
@@ -668,7 +758,40 @@ const buildGenericHarness = {
           }
         } catch (Throwable __nope) { /* ignore */ }
       }
-      if (out == null) { System.out.print(""); }
+      // Last-resort fallback: if exactly one declared method matches by arity/type assignability, invoke it
+      if (out == null) {
+        try {
+          java.util.List<java.lang.reflect.Method> __cands = new java.util.ArrayList<>();
+          for (java.lang.reflect.Method m : solCls.getDeclaredMethods()) {
+            Class<?>[] pts = m.getParameterTypes();
+            if (pts.length != __typesA.length) continue;
+            boolean ok = true;
+            for (int i = 0; i < __typesA.length; i++) {
+              Class<?> a = pts[i]; Class<?> b = __typesA[i];
+              if (a.isPrimitive()) {
+                if (a == int.class) a = Integer.class; else if (a == boolean.class) a = Boolean.class; else if (a == long.class) a = Long.class; else if (a == double.class) a = Double.class; else if (a == float.class) a = Float.class; else if (a == char.class) a = Character.class; else if (a == byte.class) a = Byte.class; else if (a == short.class) a = Short.class;
+              }
+              if (b.isPrimitive()) {
+                if (b == int.class) b = Integer.class; else if (b == boolean.class) b = Boolean.class; else if (b == long.class) b = Long.class; else if (b == double.class) b = Double.class; else if (b == float.class) b = Float.class; else if (b == char.class) b = Character.class; else if (b == byte.class) b = Byte.class; else if (b == short.class) b = Short.class;
+              }
+              if (!a.isAssignableFrom(b)) { ok = false; break; }
+            }
+            if (ok) __cands.add(m);
+          }
+          if (__cands.size() == 1) {
+            java.lang.reflect.Method m = __cands.get(0);
+            m.setAccessible(true);
+            boolean isStatic = java.lang.reflect.Modifier.isStatic(m.getModifiers());
+            out = isStatic ? m.invoke(null, __valsA) : (sol != null ? m.invoke(sol, __valsA) : null);
+          }
+        } catch (Throwable __ignore) { /* no-op */ }
+      }
+      if (out == null) {
+        try { 
+          ${any2D ? (()=>{ const first2D = (fields.find(f=>is2D(f.value))||{}).name || ''; return first2D ? `System.out.print(J.ser2D(${first2D}));` : 'System.out.print("");'; })() : ''}
+          ${(!any2D && needsList) ? 'if (LNC != null) System.out.print("[]"); else System.out.print("");' : ''}
+        } catch(Throwable __ignore){ System.out.print(""); }
+      }
       else if (out.getClass().isArray()) {
         if (out instanceof int[]) System.out.print(java.util.Arrays.toString((int[])out));
         else if (out instanceof long[]) System.out.print(java.util.Arrays.toString((long[])out));
@@ -685,7 +808,64 @@ const buildGenericHarness = {
         }
       } else if (out instanceof java.lang.String) {
         System.out.print(out.toString());
-      } else { System.out.print(out.toString()); }
+      } else if (out instanceof java.util.Collection) {
+        try {
+          java.util.Collection<?> coll = (java.util.Collection<?>) out;
+          // Detect nested collection of strings
+          boolean nested = false, allStr = true;
+          for (Object e : coll) { if (e instanceof java.util.Collection) { nested = true; break; } }
+          if (!nested) {
+            // Flat collection -> treat as array of strings/numbers, quote strings
+            java.util.List<String> items = new java.util.ArrayList<>();
+            for (Object e : coll) {
+              if (e instanceof String) items.add(Q.q((String)e));
+              else items.add(String.valueOf(e));
+            }
+            java.util.Collections.sort(items);
+            System.out.print("[" + String.join(",", items) + "]");
+          } else {
+            // Nested: List<List<...>>; assume strings for stable compare
+            java.util.List<java.util.List<String>> groups = new java.util.ArrayList<>();
+            for (Object g : coll) {
+              if (g instanceof java.util.Collection) {
+                java.util.List<String> gl = new java.util.ArrayList<>();
+                for (Object e : (java.util.Collection<?>) g) {
+                  if (e instanceof String) gl.add((String)e); else gl.add(String.valueOf(e));
+                }
+                java.util.Collections.sort(gl);
+                groups.add(gl);
+              }
+            }
+            java.util.Collections.sort(groups, (a,b) -> {
+              if (a.size() != b.size()) return Integer.compare(a.size(), b.size());
+              for (int i=0; i<Math.min(a.size(), b.size()); i++) {
+                int c = a.get(i).compareTo(b.get(i)); if (c!=0) return c;
+              }
+              return Integer.compare(a.size(), b.size());
+            });
+            StringBuilder sb = new StringBuilder("[");
+            for (int i=0;i<groups.size();i++){
+              if (i>0) sb.append(',');
+              sb.append('[');
+              java.util.List<String> gl = groups.get(i);
+              for (int j=0;j<gl.size();j++){
+                if (j>0) sb.append(',');
+                String s = gl.get(j);
+                sb.append(Q.q(s));
+              }
+              sb.append(']');
+            }
+            sb.append(']');
+            System.out.print(sb.toString());
+          }
+        } catch (Throwable __serColl) { System.out.print(out.toString()); }
+      } else {
+        // Try to serialize as a node (has fields val,next) when LL helpers exist; else fallback
+        try {
+          java.lang.reflect.Field nf = out.getClass().getDeclaredField("next"); nf.setAccessible(true);
+          ${needsList ? 'System.out.print(LL.ser(out));' : 'System.out.print(out.toString());'}
+        } catch (Throwable __x) { System.out.print(out.toString()); }
+      }
     } catch (Exception e) { e.printStackTrace(); }`);
     const body = bodyLines.join('\n');
     const cleaned = sanitizeJavaCode(userCode);
@@ -706,14 +886,141 @@ const buildGenericHarness = {
     const cand = funcCandidates(title);
     const assigns = fields.map(f => `const ${f.name} = ${f.value || 'undefined'};`).join('\n');
     const tryCalls = cand.map((name) => `if (typeof ${name}==='function') { out = ${name}(${fields.map(f=>f.name).join(',')}); } else if (typeof Solution==='function' && typeof (new Solution())['${name}']==='function') { out = (new Solution())['${name}'](${fields.map(f=>f.name).join(',')}); }`).join(' else ');
-    const body = `${assigns}\ntry { let out = null; ${tryCalls}; let __s=''; if (typeof out==='number') { __s = Number.isInteger(out) ? String(out) : out.toFixed(5); } else if (typeof out==='string') { __s = JSON.stringify(out); } else { __s = JSON.stringify(out); } process.stdout.write(__s ?? ''); } catch(e) { console.error(e && e.stack? e.stack : e); }`;
+    const firstArg = fields[0]?.name || null;
+    const body = `${assigns}\ntry { let out = null; ${tryCalls}; let __s=''; if (out === undefined || out === null) { ${firstArg ? `try { __s = JSON.stringify(${firstArg}); } catch(_) { __s = ''; }` : `__s = '';`} } else if (typeof out==='number') { __s = Number.isInteger(out) ? String(out) : out.toFixed(5); } else if (typeof out==='string') { __s = JSON.stringify(out); } else { __s = JSON.stringify(out); } process.stdout.write(__s ?? ''); } catch(e) { console.error(e && e.stack? e.stack : e); }`;
     return `${userCode}\n${body}`;
   },
   python: (userCode, fields, title) => {
     const cand = funcCandidates(title);
     const assigns = fields.map(f => `${f.name} = ${f.value || 'None'}`).join('\n');
     const pyList = JSON.stringify(cand);
-    const body = `${assigns}\nimport sys, json, traceback, math, inspect\nout = None\ntry:\n    __cands = ${pyList}\n    for __name in __cands:\n        try:\n            out = getattr(Solution(), __name)(${fields.map(f=>f.name).join(',')})\n            break\n        except Exception:\n            try:\n                fn = globals().get(__name)\n                if callable(fn) and not inspect.isclass(fn) and fn.__name__ != 'Solution':\n                    out = fn(${fields.map(f=>f.name).join(',')})\n                    break\n            except Exception:\n                pass\n    # Fallback: scan Solution methods and globals by arity if still None\n    if out is None:\n        try:\n            __sol = Solution()\n            __need = ${fields.length}\n            __args = [${fields.map(f=>f.name).join(',')}]\n            if __need > 0:\n                # scan instance methods only when we have args\n                for _n in dir(__sol):\n                    try:\n                        __fn = getattr(__sol, _n)\n                        if callable(__fn):\n                            sig = inspect.signature(__fn)\n                            req = [p for p in sig.parameters.values() if p.default is p.empty and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]\n                            if len(req) == __need:\n                                try:\n                                    out = __fn(*__args)\n                                    break\n                                except Exception:\n                                    pass\n                    except Exception:\n                        pass\n            # scan global callables if still None (skip classes/types and Solution)\n            if out is None and __need > 0:\n                for _n, _fn in list(globals().items()):\n                    if (inspect.isfunction(_fn) or inspect.ismethod(_fn)) and getattr(_fn, '__name__', '') not in ('Solution',):\n                        try:\n                            sig = inspect.signature(_fn)\n                            req = [p for p in sig.parameters.values() if p.default is p.empty and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]\n                            if len(req) == __need:\n                                try:\n                                    out = _fn(*__args)\n                                    break\n                                except Exception:\n                                    pass\n                        except Exception:\n                            pass\n        except Exception:\n            pass\n    # If out is a Solution instance (e.g., due to an accidental callable), treat as no output\n    try:\n        from types import SimpleNamespace as __SN  # dummy import to allow try block\n    except Exception:\n        pass\n    try:\n        if out is not None and out.__class__.__name__ == 'Solution':\n            out = None\n    except Exception:\n        pass\n    if out is None:\n        sys.stdout.write('')\n    else:\n        try:\n            if hasattr(out, '__iter__') and not isinstance(out, (str, bytes)):\n                sys.stdout.write(json.dumps(list(out)))\n            elif isinstance(out, float) and not math.isfinite(out):\n                sys.stdout.write(str(out))\n            elif isinstance(out, float):\n                sys.stdout.write(f\"{out:.5f}\")\n            elif isinstance(out, str):\n                sys.stdout.write(json.dumps(out))\n            else:\n                sys.stdout.write(str(out))\n        except Exception:\n            sys.stdout.write(str(out) if out is not None else '')\nexcept Exception:\n    traceback.print_exc()`;
+    const firstArg = fields[0]?.name || '';
+    // Prepare linked-list helpers and per-arg ll variants
+    const llPrep = fields.map(f => `${f.name}__ll = build(${f.name}) if isinstance(${f.name}, list) else ${f.name}`).join('\n');
+    const llPrepIndented = llPrep ? llPrep.split('\n').map(l => `    ${l}`).join('\n') : '';
+    const argsRaw = fields.map(f=>f.name).join(',');
+    const argsLL = fields.map(f=>`${f.name}__ll`).join(',');
+    const body = `${assigns}
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def build(a):
+    try:
+        it = list(a)
+    except Exception:
+        return a
+    d = ListNode(0); c = d
+    for x in it:
+        c.next = ListNode(int(x) if isinstance(x, (int, float, str)) and str(x).lstrip('-').isdigit() else x)
+        c = c.next
+    return d.next
+
+def ser(h):
+    out = []
+    while h:
+        out.append(h.val)
+        h = h.next
+    return '[' + ','.join(str(x) for x in out) + ']'
+
+import sys, json, traceback, math, inspect
+out = None
+try:
+${llPrepIndented}
+    __cands = ${pyList}
+    __args = [${argsRaw}]
+    __args_ll = [${argsLL}]
+    for __name in __cands:
+        try:
+            out = getattr(Solution(), __name)(*__args)
+            break
+        except Exception:
+            try:
+                out = getattr(Solution(), __name)(*__args_ll)
+                break
+            except Exception:
+                try:
+                    fn = globals().get(__name)
+                    if callable(fn) and not inspect.isclass(fn) and fn.__name__ != 'Solution':
+                        try:
+                            out = fn(*__args)
+                        except Exception:
+                            out = fn(*__args_ll)
+                        break
+                except Exception:
+                    pass
+    # Fallback: scan Solution methods and globals by arity if still None
+    if out is None:
+        try:
+            __sol = Solution()
+            __need = ${fields.length}
+            if __need > 0:
+                for _n in dir(__sol):
+                    try:
+                        __fn = getattr(__sol, _n)
+                        if callable(__fn):
+                            sig = inspect.signature(__fn)
+                            req = [p for p in sig.parameters.values() if p.default is p.empty and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
+                            if len(req) == __need:
+                                try:
+                                    out = __fn(*__args)
+                                    break
+                                except Exception:
+                                    try:
+                                        out = __fn(*__args_ll)
+                                        break
+                                    except Exception:
+                                        pass
+                    except Exception:
+                        pass
+            if out is None and __need > 0:
+                for _n, _fn in list(globals().items()):
+                    if (inspect.isfunction(_fn) or inspect.ismethod(_fn)) and getattr(_fn, '__name__', '') not in ('Solution',):
+                        try:
+                            sig = inspect.signature(_fn)
+                            req = [p for p in sig.parameters.values() if p.default is p.empty and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
+                            if len(req) == __need:
+                                try:
+                                    out = _fn(*__args)
+                                    break
+                                except Exception:
+                                    try:
+                                        out = _fn(*__args_ll)
+                                        break
+                                    except Exception:
+                                        pass
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+    # Normalize accidental Solution object
+    try:
+        if out is not None and out.__class__.__name__ == 'Solution':
+            out = None
+    except Exception:
+        pass
+    if out is None:
+        ${firstArg ? `\n        try:\n            # Prefer LL first-arg if available for in-place LL ops\n            sys.stdout.write(ser(${firstArg}__ll) if '${firstArg}__ll' in globals() else json.dumps(${firstArg}, separators=(',',':')))\n        except Exception:\n            sys.stdout.write('')` : `sys.stdout.write('')`}
+    else:
+        try:
+            # If a ListNode was returned, serialize it
+            if hasattr(out, 'val') and hasattr(out, 'next') and not hasattr(out, '__iter__'):
+                sys.stdout.write(ser(out))
+            elif hasattr(out, '__iter__') and not isinstance(out, (str, bytes)):
+                sys.stdout.write(json.dumps(list(out), separators=(',',':')))
+            elif isinstance(out, float) and not math.isfinite(out):
+                sys.stdout.write(str(out))
+            elif isinstance(out, float):
+                sys.stdout.write(f"{out:.5f}")
+            elif isinstance(out, str):
+                sys.stdout.write(json.dumps(out))
+            else:
+                sys.stdout.write(str(out))
+        except Exception:
+            sys.stdout.write(str(out) if out is not None else '')
+except Exception:
+    traceback.print_exc()`;
     return `${userCode}\n${body}`;
   }
 };
@@ -807,9 +1114,7 @@ export const runCode = async (req, res) => {
           if (process.env.JUDGE_LOG === '1') console.log('Generated source code:', source_code.slice(0,2000));
           // If user Java code already has a main method, allow stdin so their program can read inputs.
           // Otherwise, for Java we rely on our reflective harness and keep stdin empty.
-          if (lang === 'python' || lang === 'javascript' || lang==='js' || lang==='node') {
-            stdin = providedStdin || joinFieldsAsStdin(fields);
-          } else if (lang === 'java') {
+          if (lang === 'java') {
             stdin = hasUserMain(code) ? (providedStdin || joinFieldsAsStdin(fields)) : '';
           } else {
             stdin = '';
@@ -820,13 +1125,11 @@ export const runCode = async (req, res) => {
         const langId = toId(language);
         if ((language || '').toLowerCase() === 'java') {
           try {
-            // De-escape in case any layer introduced literal backslash sequences
+            // Only normalize visible escapes; do NOT collapse backslashes or quotes
             source_code = source_code
               .replace(/\\n/g, '\n')
               .replace(/\\r/g, '\r')
-              .replace(/\\t/g, '\t')
-              .replace(/\\\\/g, '\\')
-              .replace(/\\"/g, '"');
+              .replace(/\\t/g, '\t');
           } catch(_) {}
         }
         if (process.env.JUDGE_LOG === '1') console.log('Submitting to ACE:', { language_id: langId, source_code, test_cases: [{ input: stdin, expected_output: expected }] });
@@ -872,6 +1175,34 @@ export const runCode = async (req, res) => {
           // string vs JSON-quoted string
           try { const pb = JSON.parse(sb); if (typeof pb === 'string' && sa === pb) return true; } catch(_) {}
           try { const pa = JSON.parse(sa); if (typeof pa === 'string' && pa === JSON.parse(sb)) return true; } catch(_) {}
+          // array equivalence: JSON vs Java-style [a, b, c]
+          const parseArr = (s) => {
+            try { const x = JSON.parse(s); if (Array.isArray(x)) return x.map((v)=>v); } catch(_) {}
+            if (/^\[.*\]$/.test(s)) {
+              const inner = s.slice(1, -1).trim();
+              if (!inner) return [];
+              const parts = inner.split(/\s*,\s*/).map((p)=>{
+                const q = p.replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+                return q;
+              });
+              return parts;
+            }
+            return null;
+          };
+          const aa = parseArr(sa); const bb = parseArr(sb);
+          if (aa && bb) {
+            if (aa.length !== bb.length) return false;
+            for (let i=0;i<aa.length;i++) {
+              const va = (aa[i] ?? '').toString();
+              const vb = (bb[i] ?? '').toString();
+              // reuse scalar rules: numbers, booleans, or exact string
+              const lva = va.toLowerCase(); const lvb = vb.toLowerCase();
+              if ((lva === 'true' || lva === 'false') && (lvb === 'true' || lvb === 'false')) { if (lva !== lvb) return false; continue; }
+              if (!isNaN(Number(va)) && !isNaN(Number(vb))) { if (Number(va) !== Number(vb)) return false; continue; }
+              if (va !== vb) return false;
+            }
+            return true;
+          }
           // numeric equivalence
           if (!isNaN(Number(sa)) && !isNaN(Number(sb))) return Number(sa) === Number(sb);
           return false;
@@ -945,7 +1276,8 @@ export const runCode = async (req, res) => {
             stdin = providedStdin || joinFieldsAsStdin(fields);
           } else {
             source_code = (buildGenericHarness[ (lang==='c++'||lang==='cpp17') ? 'cpp' : (lang==='js'?'js': lang) ] || ((u,f,t)=>u))(code, fields, chal.title || '');
-            stdin = (lang === 'python' || lang === 'javascript' || lang==='js' || lang==='node') ? providedStdin : '';
+            // Do not pass stdin when using generic harness for JS/Python
+            stdin = '';
           }
         }
 
@@ -995,6 +1327,33 @@ export const runCode = async (req, res) => {
             // string vs JSON-quoted string
             try { const pb = JSON.parse(sb); if (typeof pb === 'string' && sa === pb) return true; } catch (_) {}
             try { const pa = JSON.parse(sa); if (typeof pa === 'string' && pa === JSON.parse(sb)) return true; } catch (_) {}
+            // array equivalence
+            const parseArr = (s) => {
+              try { const x = JSON.parse(s); if (Array.isArray(x)) return x.map((v)=>v); } catch(_) {}
+              if (/^\[.*\]$/.test(s)) {
+                const inner = s.slice(1, -1).trim();
+                if (!inner) return [];
+                const parts = inner.split(/\s*,\s*/).map((p)=>{
+                  const q = p.replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+                  return q;
+                });
+                return parts;
+              }
+              return null;
+            };
+            const aa = parseArr(sa); const bb = parseArr(sb);
+            if (aa && bb) {
+              if (aa.length !== bb.length) return false;
+              for (let i=0;i<aa.length;i++) {
+                const va = (aa[i] ?? '').toString();
+                const vb = (bb[i] ?? '').toString();
+                const lva = va.toLowerCase(); const lvb = vb.toLowerCase();
+                if ((lva === 'true' || lva === 'false') && (lvb === 'true' || lvb === 'false')) { if (lva !== lvb) return false; continue; }
+                if (!isNaN(Number(va)) && !isNaN(Number(vb))) { if (Number(va) !== Number(vb)) return false; continue; }
+                if (va !== vb) return false;
+              }
+              return true;
+            }
             // numeric equivalence
             if (!isNaN(Number(sa)) && !isNaN(Number(sb))) return Number(sa) === Number(sb);
             return false;
