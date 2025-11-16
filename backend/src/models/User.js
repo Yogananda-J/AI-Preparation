@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     joinedAt: { type: Date, default: Date.now },
     lastSolvedAt: { type: Date, default: null },
+    lastLoginAt: { type: Date, default: null },
     stats: {
       totalSolved: { type: Number, default: 0 },
       totalSubmissions: { type: Number, default: 0 },

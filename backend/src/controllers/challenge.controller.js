@@ -1400,195 +1400,128 @@ export const runCode = async (req, res) => {
 export const submitSolution = async (req, res) => {
   try {
     const userId = req.user?.sub || null;
-    const { challengeId, code, language } = req.body || {};
-    if (!challengeId || !code || !language) {
-      return res.status(400).json({ error: 'Missing fields' });
+    const { challengeId, code, language, caseResults: providedCases } = req.body || {};
+    if (!challengeId) {
+      return res.status(400).json({ error: 'Missing challengeId' });
     }
 
     const chal = await Challenge.findOne({ $or: [{ numId: challengeId }, { slug: challengeId }] });
     if (!chal) return res.status(404).json({ error: 'Challenge not found' });
-    const priv = Array.isArray(chal.privateTests) ? chal.privateTests : [];
-    const examples = priv.length ? priv : (Array.isArray(chal.examples) ? chal.examples : []);
-    if (!examples.length) return res.status(400).json({ error: 'No test cases for this challenge' });
+    // Use a string key for submissions as enforced by the schema
+    const challengeKey = (chal?.numId != null)
+      ? String(chal.numId)
+      : (chal?.slug ? String(chal.slug) : String(challengeId));
 
-    const queued = await Submission.create({
-      userId: userId || undefined,
-      challengeId,
-      language,
-      code,
-      verdict: 'WA',
-      status: 'QUEUED',
-      timeMs: 0,
-      memoryMB: 0,
-      score: chal.points || 100,
-      caseResults: [],
-    });
-    res.status(202).json({ submissionId: queued._id.toString(), status: 'QUEUED' });
-
-    (async () => {
-      const ACE_URL = (process.env.ACE_URL || '').trim();
-      const JUDGE0_URL = process.env.JUDGE0_URL;
-      const RAPID_KEY = process.env.JUDGE0_RAPIDAPI_KEY;
-      const headers = { 'Content-Type': 'application/json' };
-      if (RAPID_KEY) { headers['X-RapidAPI-Key'] = RAPID_KEY; headers['X-RapidAPI-Host'] = (new URL(JUDGE0_URL || 'https://judge0-ce.p.rapidapi.com')).host; }
-      const langMap = { javascript: 63, js: 63, node: 63, python: 71, python3: 71, py: 71, java: 62, cpp: 54, 'c++': 54, cpp17: 54 };
-      const toId = (lang) => langMap[(lang || '').toLowerCase()] || null;
-
-      await Submission.updateOne({ _id: queued._id }, { $set: { status: 'PROCESSING' } });
-
-      let verdict = 'AC';
-      let passed = 0; const total = examples.length;
-      let timeMs = 0; let memoryMB = 0;
-      const caseResults = [];
-      const detailsArr = [];
-      const severity = (v) => ({ CE:4, RE:3, TLE:2, WA:1, AC:0 }[v] ?? 0);
-
-      const runOneACE = async (index, fields, expected) => {
-        const base = ACE_URL.replace(/\/$/, '');
-        const lang = (language || '').toLowerCase();
-        let source_code = code;
-        let stdin = joinFieldsAsStdin(fields);
-
-        const isTwoSum = /\btwo\s+sum\b/i.test(chal.title || '');
-        const isAddTwoNumbers = /\badd\s+two\s+numbers\b/i.test(chal.title || '');
-
-        if (isTwoSum) {
-          if (lang === 'java') source_code = buildTwoSumHarness.java(code, fields);
-          else if (lang === 'cpp' || lang === 'c++' || lang === 'cpp17') source_code = buildTwoSumHarness.cpp(code, fields);
-          else if (lang === 'javascript' || lang === 'js' || lang === 'node') source_code = buildTwoSumHarness.js(code, fields);
-          else if (lang === 'python' || lang === 'py' || lang === 'python3') source_code = buildTwoSumHarness.python(code, fields);
-          stdin = '';
-        } else if (isAddTwoNumbers) {
-          if (lang === 'java') source_code = buildAddTwoNumbersHarness.java(code, fields);
-          else if (lang === 'cpp' || lang === 'c++' || lang === 'cpp17') source_code = buildAddTwoNumbersHarness.cpp(code, fields);
-          else if (lang === 'javascript' || lang === 'js' || lang === 'node') source_code = buildAddTwoNumbersHarness.js(code, fields);
-          else if (lang === 'python' || lang === 'py' || lang === 'python3') source_code = buildAddTwoNumbersHarness.python(code, fields);
-          stdin = '';
-        } else if (['java', 'python', 'cpp', 'c++', 'cpp17', 'javascript', 'js', 'node'].includes(lang)) {
-          source_code = (buildGenericHarness[ (lang==='c++'||lang==='cpp17') ? 'cpp' : (lang==='js'?'js': lang) ] || ((u,f,t)=>u))(code, fields, chal.title || '');
-        }
-
-        const langId = toId(language);
-        const createResp = await fetch(`${base}/submissions`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ language_id: langId, source_code, test_cases: [{ input: stdin, expected_output: expected }] }) });
-        const created = await createResp.json();
-        const token = created?.token;
-        let fin = null; const start = Date.now();
-        for (let tries=0; tries<120; tries++) { await new Promise(r=>setTimeout(r,250)); const st = await fetch(`${base}/submissions/${token}`); const d = await st.json(); if (d && typeof d.status_id === 'number' && d.status_id !== 1 && d.status_id !== 2) { fin = d; break; } }
-        const tc = fin?.test_cases?.[0] || {}; const statusId = fin?.status_id ?? 13; const stdout = (tc.actual_output || '').toString(); const stderr = tc.stderr || '';
-        const t = Math.max(0, Date.now()-start); timeMs += t;
-
-        let v='AC'; if (statusId===8) v='CE'; else if (statusId===5) v='TLE'; else if (statusId===7) v='RE'; else if (statusId===4) v='WA'; else { v = stdout.trim() === expected ? 'AC' : 'WA'; }
-        if (v==='AC') passed++; else if (severity(v) > severity(verdict)) verdict = v;
-        const inputText = examples[index]?.input || (fields && fields.length ? fields.map(f=>`${f.name}=${f.value}`).join(', ') : '');
-        const entry = { index: index+1, verdict: v, input: inputText, timeMs: t, memoryMB: 0, expected, actual: stdout.trim(), stderr };
-        caseResults.push(entry); detailsArr.push(entry);
+    // Fast path: frontend supplies run results (caseResults). We compute verdict without re-running.
+    if (Array.isArray(providedCases) && providedCases.length) {
+      // Normalize each case into a consistent structure and compute per-case verdict
+      const norm = (x) => (x ?? '').toString();
+      const __eq = (a, b) => {
+        if (a === b) return true;
+        const sa = norm(a).trim();
+        const sb = norm(b).trim();
+        try { const pb = JSON.parse(sb); if (typeof pb === 'string' && sa === pb) return true; } catch (_) {}
+        try { const pa = JSON.parse(sa); if (typeof pa === 'string' && pa === JSON.parse(sb)) return true; } catch (_) {}
+        if (!isNaN(Number(sa)) && !isNaN(Number(sb))) return Number(sa) === Number(sb);
+        return false;
       };
+      const normalizedCases = providedCases.map((c, i) => {
+        const statusId = Number(c?.status_id ?? c?.statusId ?? 0) || 0;
+        const expected = c?.expected ?? c?.expected_output ?? '';
+        const actual = c?.actual ?? c?.actual_output ?? '';
+        let cv = 'WA';
+        if (statusId === 8) cv = 'CE';
+        else if (statusId === 5) cv = 'TLE';
+        else if (statusId === 7) cv = 'RE';
+        else cv = __eq(actual, expected) ? 'AC' : 'WA';
+        return {
+          index: Number(c?.index ?? i),
+          input: c?.input ?? '',
+          expected,
+          actual,
+          stderr: c?.stderr ?? '',
+          statusId,
+          timeMs: Number(c?.timeMs ?? c?.runtime_ms ?? 0) || 0,
+          memoryMB: Number(c?.memoryMB ?? c?.memory_mb ?? 0) || 0,
+          verdict: cv,
+        };
+      });
+      const total = normalizedCases.length;
+      const passed = normalizedCases.filter(c => (c?.verdict || '').toUpperCase() === 'AC').length;
+      const verdict = passed === total ? 'AC' : (passed > 0 ? 'PA' : 'WA');
+      const timeMs = normalizedCases.reduce((s,c)=>s + (Number(c?.timeMs)||0), 0);
+      const memoryMB = normalizedCases.reduce((s,c)=>Math.max(s, Number(c?.memoryMB)||0), 0);
 
-      const runOneJudge0 = async (index, fields, expected) => {
-        const lang = (language || '').toLowerCase();
-        let source_code = code;
-        let stdin = joinFieldsAsStdin(fields);
+      const sub = await Submission.create({
+        userId: userId || undefined,
+        challengeId: challengeKey,
+        language: language || 'unknown',
+        code: typeof code === 'string' ? code : '',
+        verdict,
+        status: 'DONE',
+        timeMs,
+        memoryMB,
+        score: chal.points || 100,
+        caseResults: normalizedCases,
+        details: normalizedCases,
+      });
 
-        const isTwoSum = /\btwo\s+sum\b/i.test(chal.title || '');
-        const isAddTwoNumbers = /\badd\s+two\s+numbers\b/i.test(chal.title || '');
-
-        if (isTwoSum) {
-          if (lang === 'java') source_code = buildTwoSumHarness.java(code, fields);
-          else if (lang === 'cpp' || lang === 'c++' || lang === 'cpp17') source_code = buildTwoSumHarness.cpp(code, fields);
-          else if (lang === 'javascript' || lang === 'js' || lang === 'node') source_code = buildTwoSumHarness.js(code, fields);
-          else if (lang === 'python' || lang === 'py' || lang === 'python3') source_code = buildTwoSumHarness.python(code, fields);
-          stdin = '';
-        } else if (isAddTwoNumbers) {
-          if (lang === 'java') source_code = buildAddTwoNumbersHarness.java(code, fields);
-          else if (lang === 'cpp' || lang === 'c++' || lang === 'cpp17') source_code = buildAddTwoNumbersHarness.cpp(code, fields);
-          else if (lang === 'javascript' || lang === 'js' || lang === 'node') source_code = buildAddTwoNumbersHarness.js(code, fields);
-          else if (lang === 'python' || lang === 'py' || lang === 'python3') source_code = buildAddTwoNumbersHarness.python(code, fields);
-          stdin = '';
-        } else if (['java', 'python', 'cpp', 'c++', 'cpp17', 'javascript', 'js', 'node'].includes(lang)) {
-          source_code = (buildGenericHarness[ (lang==='c++'||lang==='cpp17') ? 'cpp' : (lang==='js'?'js': lang) ] || ((u,f,t)=>u))(code, fields, chal.title || '');
-        }
-
-        const resp = await fetch(`${JUDGE0_URL.replace(/\/$/, '')}/submissions?base64_encoded=false&wait=true`, {
-          method:'POST', headers, body: JSON.stringify({ language_id: toId(language), source_code, stdin })
-        });
-        const r = await resp.json();
-        const statusDesc = r?.status?.description || '';
-        const compileErr = r?.compile_output;
-        const stderr = r?.stderr;
-        const stdout = (r?.stdout || '').toString();
-        const t = r?.time ? Math.round(parseFloat(r.time) * 1000) : 0; timeMs += t;
-        const m = r?.memory ? Math.round(r.memory / 1024) : 0; memoryMB += m;
-        let v='AC';
-        if (compileErr) v='CE';
-        else if (statusDesc.toLowerCase().includes('time limit')) v='TLE';
-        else if (stderr) v='RE';
-        else v = (stdout.trim() === expected ? 'AC' : 'WA');
-
-        if (v==='AC') passed++; else if (severity(v) > severity(verdict)) verdict = v;
-        const inputText = examples[index]?.input || (fields && fields.length ? fields.map(f=>`${f.name}=${f.value}`).join(', ') : '');
-        const entry = { index: index+1, verdict: v, input: inputText, timeMs: t, memoryMB: m, expected, actual: stdout.trim() };
-        caseResults.push(entry);
-        detailsArr.push(entry);
-      };
-
-      if (ACE_URL && toId(language)) {
-        for (let i = 0; i < examples.length; i++) {
-          const expected = (examples[i]?.output || '').toString().trim();
-          const fields = parseFieldsFromInput(examples[i].input || '');
-          await runOneACE(i, fields, expected);
-        }
-      } else if (JUDGE0_URL && toId(language)) {
-        for (let i = 0; i < examples.length; i++) {
-          const expected = (examples[i]?.output || '').toString().trim();
-          const fields = parseFieldsFromInput(examples[i].input || '');
-          await runOneJudge0(i, fields, expected);
-        }
-      } else {
-        verdict = 'WA'; passed = 0; timeMs = 0; memoryMB = 0;
-        for(let i=0;i<total;i++){ caseResults.push({ index: i+1, verdict: 'WA', timeMs: 0, memoryMB: 0 }); detailsArr.push({ index: i+1, verdict: 'WA', input: '', expected: '', actual: '' }); }
-      }
-
-      await Submission.updateOne({ _id: queued._id }, { $set: { verdict, timeMs, memoryMB, status: 'DONE', caseResults, details: detailsArr } });
-
+      // Leaderboard/user stats update (award partial credit) — resilient
       if (userId) {
-        const score = chal.points || 100;
-        const hadPriorAccepted = await Submission.exists({ userId, challengeId, verdict: 'AC' });
-        const user = await User.findById(userId);
-        if (user) {
-          const firstSolve = !hadPriorAccepted && verdict === 'AC';
-          user.stats.totalSubmissions = (user.stats.totalSubmissions || 0) + 1;
-          if (firstSolve) {
-            user.stats.totalScore = (user.stats.totalScore || 0) + score;
-            user.stats.totalSolved = (user.stats.totalSolved || 0) + 1;
-            const now = new Date();
-            const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-            const today = startOfDay(now);
-            const last = user.lastSolvedAt ? startOfDay(new Date(user.lastSolvedAt)) : null;
-            if (!last) user.stats.currentStreak = 1; else {
-              const diffDays = Math.round((today - last) / (24*60*60*1000));
-              if (diffDays === 0) user.stats.currentStreak = user.stats.currentStreak || 1;
-              else if (diffDays === 1) user.stats.currentStreak = (user.stats.currentStreak || 0) + 1;
-              else user.stats.currentStreak = 1;
+        try {
+          const baseScore = chal.points || 100;
+          const partScore = Math.round(baseScore * (total > 0 ? (passed / total) : 0));
+          const hadPriorAccepted = await Submission.exists({ userId, challengeId: challengeKey, verdict: 'AC' });
+          const user = await User.findById(userId);
+          if (user) {
+            // Initialize stats object safely
+            user.stats = user.stats || {};
+            user.stats.totalSubmissions = Number(user.stats.totalSubmissions || 0) + 1;
+            // Always award proportional score for this submission
+            user.stats.totalScore = Number(user.stats.totalScore || 0) + Number(partScore || 0);
+            // Count solved only on first full AC for this challenge
+            if (!hadPriorAccepted && verdict === 'AC') {
+              user.stats.totalSolved = Number(user.stats.totalSolved || 0) + 1;
+              const now = new Date();
+              const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+              const today = startOfDay(now);
+              const last = user.lastSolvedAt ? startOfDay(new Date(user.lastSolvedAt)) : null;
+              if (!last) user.stats.currentStreak = 1; else {
+                const diffDays = Math.round((today - last) / (24*60*60*1000));
+                if (diffDays === 0) user.stats.currentStreak = Number(user.stats.currentStreak || 1);
+                else if (diffDays === 1) user.stats.currentStreak = Number(user.stats.currentStreak || 0) + 1;
+                else user.stats.currentStreak = 1;
+              }
+              user.stats.maxStreak = Math.max(Number(user.stats.maxStreak || 0), Number(user.stats.currentStreak || 0));
+              user.lastSolvedAt = now;
             }
-            user.stats.maxStreak = Math.max(user.stats.maxStreak || 0, user.stats.currentStreak || 0);
-            user.lastSolvedAt = now;
+            await user.save();
           }
-          await user.save();
+          await Activity.create({
+            userId,
+            type: 'challenge_submit',
+            challengeId,
+            challengeTitle: chal.title || String(chal?.title || ''),
+            difficulty: chal.difficulty || String(chal?.difficulty || ''),
+            status: verdict === 'AC' ? 'solved' : (passed > 0 ? 'partially_accepted' : 'attempted'),
+            timeSpent: 0,
+            metadata: { timeMs, memoryMB, passed, total },
+          });
+        } catch (e) {
+          console.error('submitSolution stats update error:', e && e.message ? e.message : e);
         }
-        await Activity.create({
-          userId,
-          type: 'challenge_submit',
-          challengeId,
-          challengeTitle: chal.title,
-          difficulty: chal.difficulty,
-          status: verdict === 'AC' ? 'solved' : 'attempted',
-          timeSpent: 0,
-          metadata: { timeMs, memoryMB },
-        });
       }
-    })().catch(async () => {
-      await Submission.updateOne({ _id: queued._id }, { $set: { status: 'ERROR' } });
-    });
+
+      return res.status(200).json({
+        submissionId: sub._id.toString(),
+        status: 'DONE',
+        message: 'Successfully submitted',
+        data: { verdict, passed, total, time: timeMs, memory: memoryMB, caseResults: normalizedCases }
+      });
+    }
+
+    // Enforced: submit must be based on provided run results
+    return res.status(400).json({ error: 'Submit requires caseResults from the latest Run (no server re-run).' });
   } catch (e) {
     if (!req.user?.sub) return res.status(401).json({ error: 'Unauthorized' });
     return res.status(500).json({ error: 'Server error' });

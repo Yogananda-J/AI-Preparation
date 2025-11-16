@@ -6,7 +6,7 @@ const SubmissionSchema = new mongoose.Schema(
     challengeId: { type: String, required: true, index: true },
     language: { type: String, required: true },
     code: { type: String, required: true },
-    verdict: { type: String, enum: ['AC', 'WA', 'TLE', 'RE', 'CE', 'Accepted', 'Wrong Answer', 'Time Limit', 'Runtime Error'], required: true },
+    verdict: { type: String, enum: ['AC', 'PA', 'WA', 'TLE', 'RE', 'CE', 'Accepted', 'Partially Accepted', 'Wrong Answer', 'Time Limit', 'Runtime Error'], required: true },
     status: { type: String, enum: ['QUEUED', 'PROCESSING', 'DONE', 'ERROR'], default: 'QUEUED', index: true },
     timeMs: { type: Number, default: 0 },
     memoryMB: { type: Number, default: 0 },

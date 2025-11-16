@@ -635,6 +635,72 @@ If interview features don't work:
   - Service discovery and networking
   - Port mapping and exposure
 
+## Code Execution and Harnesses
+
+- **Execution services**: Backend uses ACE (preferred) or Judge0 to compile/run code.
+- **Statuses**: AC, WA, TLE, RE (runtime error), CE (compilation error).
+- **Generated source view**: When using a generic harness, logs show a “Generated source code” block. Java line numbers in errors refer to this combined file.
+
+### Generic Harness (Java)
+- **Invocation**: Reflectively calls methods in `Solution` by common names: `twoSum`, `groupAnagrams`, `solve`, etc. Falls back by arity/type compatibility.
+- **Arguments**: Inputs are injected as function args, not stdin, unless the user code defines a `main` (then provided stdin is passed through).
+- **Supported inputs**:
+  - `int[]`, `long[]`, `double[]`, `boolean[]`, `char[]`, `String[]`
+  - 2D arrays: `int[][]`
+  - Linked lists: auto-build from `[1,2,3]` when the problem uses `ListNode`
+- **Outputs**:
+  - Arrays and numbers printed directly; floats formatted to 5 decimals.
+  - Collections serialized to JSON-like strings with quotes and stable ordering.
+  - Linked lists serialized to JSON-like arrays via reflection.
+- **In-place ops**: If method returns `void`/`null`, mutated primary input is printed.
+
+### Generic Harness (Python)
+- **Invocation**: Calls `Solution` methods by common names or searches by arity; if code reads stdin (`input()`/`sys.stdin`), harness is skipped and stdin is used.
+- **Linked lists**: Auto-build from arrays and serialize results or mutated heads.
+- **Output**: Collections printed as compact JSON (no spaces) for stable comparisons.
+
+### Comparator (expected vs actual)
+- Treats JSON vs language array prints equivalently.
+- Case-insensitive booleans.
+- Numeric strings vs numbers considered equal.
+
+## Example API Payloads
+
+### Java: Group Anagrams
+```json
+{
+  "challengeId": "49",
+  "language": "java",
+  "code": "import java.util.*;\nclass Solution {\n  public List<List<String>> groupAnagrams(String[] strs) {\n    Map<String,List<String>> map = new HashMap<>();\n    for (String s: strs) { char[] a = s.toCharArray(); Arrays.sort(a); String k = new String(a); map.computeIfAbsent(k, x -> new ArrayList<>()).add(s); }\n    return new ArrayList<>(map.values());\n  }\n}\n",
+  "inputs": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]"
+}
+```
+
+### Python: Remove Nth Node From End of List
+```json
+{
+  "challengeId": "19",
+  "language": "python",
+  "code": "class Solution:\n    def removeNthFromEnd(self, head, n):\n        dummy = ListNode(0)\n        dummy.next = head\n        first = dummy\n        second = dummy\n        for _ in range(n+1):\n            first = first.next\n        while first:\n            first = first.next\n            second = second.next\n        second.next = second.next.next\n        return dummy.next\n",
+  "inputs": "head = [1,2,3,4,5], n = 2"
+}
+```
+
+## Dataset Tools
+- **normalize_dataset.mjs**: Cleans and normalizes `backend/src/data/merged_subset.json`.
+  - Usage: `node backend/scripts/normalize_dataset.mjs`
+- **resync_challenges.mjs**: Syncs challenges from a source JSON into MongoDB. Accepts `merged_subset.json`.
+  - Usage: `node backend/scripts/resync_challenges.mjs`
+- **resync_from_sqlite.mjs**: Syncs from `backend/src/data/leetcode.db` (SQLite) into MongoDB.
+  - Usage: `node backend/scripts/resync_from_sqlite.mjs [--db path/to/leetcode.db]`
+- **build_easy_subset.mjs**: Generates a smaller/easy subset from the dataset.
+
+## Troubleshooting Compiler/Interpreter Errors
+- **Java CE**: Errors like `Main.java:16: error: ...` come from `javac` and point into the generated combined source. Compare with the “Generated source code” section to align lines.
+- **Java RE**: Full Java stack traces are returned.
+- **Python errors**: Real Python tracebacks. If harness is used, lines map to the combined code that was sent.
+- **Tip**: Focus on the first error in `stderr/compile_output`; later errors are often cascades.
+
 ## Roadmap / Next Steps
 
 ### Completed Features ✅

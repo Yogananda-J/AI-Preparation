@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Play, RotateCcw, Save, Clock, List, X } from 'lucide-react';
 import CodeEditor from '../components/CodeEditor';
@@ -30,12 +30,21 @@ const Challenge = () => {
   useEffect(() => {
     const loadSubs = async () => {
       if (leftTab !== 'submissions') return;
+      if (suppressNextSubFetch) { setSuppressNextSubFetch(false); return; }
       setLoadingSubs(true);
       try {
         const res = await authService.getSubmissionLogs(100);
         if (res.success && res.data?.logs) {
           const items = res.data.logs.filter((x) => x.challengeId === (id || '1'));
-          setSubmissions(items);
+          // Merge with any locally added latest and dedupe by id (prefer existing order)
+          setSubmissions((prev) => {
+            const existing = Array.isArray(prev) ? prev : [];
+            const byId = new Set();
+            const merged = [];
+            for (const s of existing) { if (s?.id && !byId.has(s.id)) { byId.add(s.id); merged.push(s); } }
+            for (const s of (items || [])) { if (s?.id && !byId.has(s.id)) { byId.add(s.id); merged.push(s); } }
+            return merged;
+          });
         } else {
           setSubmissions([]);
         }
@@ -46,63 +55,87 @@ const Challenge = () => {
     loadSubs();
   }, [leftTab, id]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmitOverlay, setShowSubmitOverlay] = useState(false);
+  const [submitOverlayState, setSubmitOverlayState] = useState('loading'); // loading | success
+  const [submitBanner, setSubmitBanner] = useState('');
+  const [suppressNextSubFetch, setSuppressNextSubFetch] = useState(false);
+  const [lastSubmitSummary, setLastSubmitSummary] = useState(null); // { verdict, passed, total, time, memory }
+  const [latestSubmit, setLatestSubmit] = useState(null); // full backend submit payload { verdict, passed, total, time, memory, caseResults }
+  const latestCardRef = useRef(null);
+
   const handleSubmitSolution = async () => {
+    if (isSubmitting) return;
     try {
+      setIsSubmitting(true);
+      setShowSubmitOverlay(true);
+      setSubmitOverlayState('loading');
+
       const res = await challengeService.submitSolution({ challengeId: challenge.id, code, language });
-      if (!res.success) return alert(res.error || 'Submission failed');
-
-      // Async pipeline: if 202 with submissionId, start polling
-      if (res.status === 202 && res.data?.submissionId) {
-        const subId = res.data.submissionId;
-        setLeftTab('submissions');
-        setHasSubmitted(true);
-        setRunResult(null);
-        setSubmissionResult({ id: subId, verdict: 'PENDING', timeMs: 0, memoryMB: 0 });
-
-        let attempts = 0;
-        const maxAttempts = 90; // ~3 minutes at 2s interval
-        const timer = setInterval(async () => {
-          attempts += 1;
-          const stat = await challengeService.getSubmissionStatus(subId);
-          if (stat.success) {
-            const d = stat.data;
-            if (d.status === 'DONE' || d.status === 'ERROR') {
-              clearInterval(timer);
-              setSubmissionResult({ id: d.id, verdict: d.verdict, timeMs: d.timeMs, memoryMB: d.memoryMB, caseResults: d.caseResults });
-              setOutput(`Verdict: ${d.verdict}\nTime: ${d.timeMs}ms\nMemory: ${d.memoryMB}MB`);
-              setActiveTab('final');
-              // Optionally refresh profile
-              try { await authService.getCurrentUser(); } catch (_) {}
-            }
-          }
-          if (attempts >= maxAttempts) {
-            clearInterval(timer);
-            alert('Submission polling timed out. Please check Submissions later.');
-          }
-        }, 2000);
-        return;
+      if (!res?.success) {
+        setShowSubmitOverlay(false);
+        return alert(res?.error || 'Submission failed');
       }
 
-      // Legacy immediate response path (201) remains supported
-      if (res.data?.submission) {
-        const s = res.data.submission;
-        setSubmissionResult(s);
-        setOutput(`Verdict: ${s.verdict}\nScore: ${s.score}\nTime: ${s.timeMs}ms\nMemory: ${s.memoryMB}MB`);
-        if (res.data.updatedStats) {
-          const stored = localStorage.getItem('user');
-          if (stored) {
-            try { const user = JSON.parse(stored); user.stats = res.data.updatedStats; localStorage.setItem('user', JSON.stringify(user)); } catch (_) {}
-          }
-        }
+      const payload = res?.data || {};
+      const { message, submissionId } = payload;
+      const data = payload?.data || {};
+      const v = (data?.verdict || '').toUpperCase();
+      const localMsg = v === 'AC' ? 'Successfully submitted' : (v === 'PA' ? 'Partially submitted' : 'Wrong Answer');
+      // Always show verdict-specific message for clarity
+      setSubmitBanner(localMsg);
+      setSubmitOverlayState('success');
+      setTimeout(() => setShowSubmitOverlay(false), 700);
+
+      // Build latest submission entry expected by the Submissions panel
+      const latest = {
+        id: submissionId || `${Date.now()}`,
+        submissionTime: new Date().toISOString(),
+        language,
+        score: data?.score ?? undefined,
+        timeMs: data?.time ?? 0,
+        memoryMB: data?.memory ?? 0,
+        verdict: data?.verdict || 'WA',
+        status: v === 'AC' ? 'success' : (v === 'PA' ? 'partial' : 'error'),
+        passed: data?.passed,
+        total: data?.total,
+      };
+      setSubmissions((prev) => [latest, ...(Array.isArray(prev) ? prev : [])]);
+
+      // Map normalized caseResults into the lightweight test-case chips for the panel
+      if (Array.isArray(data?.caseResults)) {
+        const chips = data.caseResults.map((c) => ({ id: String(c.index), ok: (c.verdict || '').toUpperCase() === 'AC', label: ((c.verdict || '').toUpperCase() === 'AC') ? 'Passed' : 'Failed' }));
+        setLastRunCases(chips);
+      }
+
+      setLastSubmitSummary({ verdict: data?.verdict, passed: data?.passed, total: data?.total, time: data?.time, memory: data?.memory });
+      setLatestSubmit({ verdict: data?.verdict, passed: data?.passed, total: data?.total, time: data?.time, memory: data?.memory, caseResults: Array.isArray(data?.caseResults) ? data.caseResults : [] });
+
+      setHasSubmitted(true);
+      setRunResult(null);
+      setLeftTab('submissions');
+      setActiveTab('final');
+      // Avoid the next effect fetch from immediately overwriting our latest item
+      setSuppressNextSubFetch(true);
+      // Compute next challenge id for the CTA
+      try {
+        const idx = (challengeList || []).findIndex((c) => String(c.id) === String(challenge.id));
+        const next = (challengeList || [])[idx + 1]?.id;
+        if (next) setNextChallengeId(next);
+      } catch (_) {}
+      // Smooth scroll to the latest card
+      setTimeout(() => { try { latestCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }, 60);
+
+      // Refresh profile/widgets if backend returned fresh user
+      if (data?.user) {
+        try { localStorage.setItem('user', JSON.stringify(data.user)); } catch (_) {}
+      } else {
         try { await authService.getCurrentUser(); } catch (_) {}
-        if (res.data.nextChallengeId) setNextChallengeId(res.data.nextChallengeId);
-        setHasSubmitted(true);
-        setActiveTab('final');
-        setLeftTab('submissions');
-        setRunResult(null);
       }
     } catch (e) {
       alert('You must be logged in to submit.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const [code, setCode] = useState(GENERIC_TEMPLATES[language]);
@@ -372,6 +405,25 @@ const Challenge = () => {
             </button>
           </div>
         </div>
+
+        {/* Full-screen submit overlay */}
+        {showSubmitOverlay && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <div className="bg-white border border-gray-200 rounded-md px-6 py-5 shadow-xl flex items-center space-x-3">
+              {submitOverlayState === 'loading' ? (
+                <>
+                  <Clock className="h-5 w-5 animate-spin text-gray-600" />
+                  <span className="text-sm font-medium text-gray-800">Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-block h-5 w-5 rounded-full bg-green-600" />
+                  <span className="text-sm font-medium text-gray-800">Submitted</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -497,19 +549,48 @@ const Challenge = () => {
                   <div className="text-sm text-gray-500">Loading...</div>
                 ) : submissions.length ? (
                   <div className="space-y-3">
+                    {submitBanner && (
+                      <div className={`rounded-md px-3 py-2 text-sm border ${ ((latestSubmit?.verdict || submissions[0]?.verdict) === 'AC') ? 'bg-green-50 border-green-200 text-green-800' : ((latestSubmit?.verdict || submissions[0]?.verdict) === 'PA' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-red-50 border-red-200 text-red-800') }`}>
+                        {submitBanner}
+                      </div>
+                    )}
                     {/* Latest submission summary with combined breakdown */}
-                    <div className="border border-gray-200 rounded-md p-4 bg-white shadow-sm">
+                    <div ref={latestCardRef} className="border border-gray-200 rounded-md p-4 bg-white shadow-sm">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-semibold text-gray-900">Latest Result</h4>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${submissions[0].status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {submissions[0].verdict || (submissions[0].status === 'success' ? 'Accepted' : 'Rejected')}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            const p = (typeof latestSubmit?.passed === 'number') ? latestSubmit.passed : (typeof lastSubmitSummary?.passed === 'number' ? lastSubmitSummary.passed : ((typeof submissions[0]?.passed === 'number') ? submissions[0].passed : (Array.isArray(lastRunCases) ? lastRunCases.filter(x=>x.ok).length : undefined)));
+                            const t = (typeof latestSubmit?.total === 'number') ? latestSubmit.total : (typeof lastSubmitSummary?.total === 'number' ? lastSubmitSummary.total : ((typeof submissions[0]?.total === 'number') ? submissions[0].total : (Array.isArray(lastRunCases) ? lastRunCases.length : undefined)));
+                            const color = (Number(p||0) === Number(t||0)) ? 'text-green-600' : 'text-red-600';
+                            return (
+                              <div className={`text-xs font-medium ${color}`}>
+                                Passed {p ?? '-'} / {t ?? '-'}
+                              </div>
+                            );
+                          })()}
+                          {(() => {
+                            const vv = ((latestSubmit?.verdict || submissions[0].verdict || '')).toUpperCase();
+                            const cls = vv === 'AC' ? 'bg-green-100 text-green-700' : (vv === 'PA' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700');
+                            const text = vv === 'AC' ? 'AC' : (vv === 'PA' ? 'PA' : 'WA');
+                            return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>{text}</span>;
+                          })()}
+                          </div>
                       </div>
                       {/* Combined Test Case Breakdown */}
                       <div className="mb-3">
                         <div className="text-xs font-medium text-gray-700 mb-1">Test Case Summary</div>
                         <div className="space-y-1">
-                          {lastRunCases && lastRunCases.length > 0 && (
+                          {latestSubmit && Array.isArray(latestSubmit.caseResults) && latestSubmit.caseResults.length > 0 ? (
+                            <div className="space-y-1">
+                              {latestSubmit.caseResults.map((c) => (
+                                <div key={c.index} className="flex items-center justify-between px-3 py-1.5 bg-gray-50 border border-gray-200 rounded">
+                                  <span className="text-xs text-gray-700">Test Case {c.index}</span>
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${ (String(c.verdict).toUpperCase() === 'AC') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{(String(c.verdict).toUpperCase() === 'AC') ? 'Passed' : 'Failed'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (lastRunCases && lastRunCases.length > 0 && (
                             <div className="space-y-1">
                               {lastRunCases.map((c) => (
                                 <div key={c.id} className="flex items-center justify-between px-3 py-1.5 bg-gray-50 border border-gray-200 rounded">
@@ -518,13 +599,7 @@ const Challenge = () => {
                                 </div>
                               ))}
                             </div>
-                          )}
-                          <div className="flex items-center justify-between px-3 py-1.5 bg-gray-50 border border-gray-200 rounded">
-                            <span className="text-xs text-gray-700">Hidden Test Cases</span>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${submissions[0].status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                              {submissions[0].status === 'success' ? 'Passed' : 'Some Failed'}
-                            </span>
-                          </div>
+                          ))}
                         </div>
                       </div>
 
@@ -536,11 +611,11 @@ const Challenge = () => {
                         </div>
                         <div className="bg-gray-50 rounded p-3 border border-gray-200">
                           <div className="text-xs text-gray-500">Time</div>
-                          <div className="text-sm font-medium text-gray-900">{submissions[0].timeMs ?? '-'} ms</div>
+                          <div className="text-sm font-medium text-gray-900">{(latestSubmit?.time ?? submissions[0].timeMs ?? lastSubmitSummary?.time ?? '-')} ms</div>
                         </div>
                         <div className="bg-gray-50 rounded p-3 border border-gray-200">
                           <div className="text-xs text-gray-500">Memory</div>
-                          <div className="text-sm font-medium text-gray-900">{submissions[0].memoryMB ?? '-'} MB</div>
+                          <div className="text-sm font-medium text-gray-900">{(latestSubmit?.memory ?? submissions[0].memoryMB ?? lastSubmitSummary?.memory ?? '-')} MB</div>
                         </div>
                         <div className="bg-gray-50 rounded p-3 border border-gray-200">
                           <div className="text-xs text-gray-500">Submitted</div>
@@ -549,11 +624,11 @@ const Challenge = () => {
                       </div>
                     </div>
 
-                    {/* History list */}
+                    {/* History list (truncate to 20 items) */}
                     <div className="border border-gray-200 rounded-md">
                       <div className="px-4 py-2 border-b border-gray-200 text-sm font-medium text-gray-700">History</div>
                       <div className="divide-y divide-gray-100">
-                        {submissions.map((s) => (
+                        {submissions.slice(0, 20).map((s) => (
                           <div key={s.id} className="px-4 py-2 flex items-center justify-between">
                             <div className="text-sm text-gray-700">
                               <span className="mr-2 font-mono text-xs text-gray-500">{new Date(s.submissionTime).toLocaleString()}</span>
@@ -562,11 +637,37 @@ const Challenge = () => {
                               <span className="mr-2">Time: {s.timeMs ?? '-'} ms</span>
                               <span>Mem: {s.memoryMB ?? '-'} MB</span>
                             </div>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${s.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{s.verdict || (s.status === 'success' ? 'Accepted' : 'Rejected')}</span>
+                            {(() => {
+                            const vv = String(s.verdict || '').toUpperCase();
+                            const cls = vv === 'AC' ? 'bg-green-100 text-green-700' : (vv === 'PA' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700');
+                            const text = vv === 'AC' ? 'AC' : (vv === 'PA' ? 'PA' : 'WA');
+                            return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>{text}</span>;
+                          })()}
                           </div>
                         ))}
                       </div>
                     </div>
+
+                    {/* Next Problem CTA after any submission */}
+                    {(submissions.length > 0 && (nextChallengeId || (challengeList||[]).length)) && (
+                      <div className="pt-2">
+                        <button
+                          onClick={() => {
+                            let nextId = nextChallengeId;
+                            if (!nextId) {
+                              try {
+                                const idx = (challengeList || []).findIndex((c) => String(c.id) === String(challenge.id));
+                                nextId = (challengeList || [])[idx + 1]?.id;
+                              } catch (_) {}
+                            }
+                            if (nextId) navigate(`/challenges/${nextId}`);
+                          }}
+                          className="mt-2 inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-primary-600 hover:bg-primary-700 text-white"
+                        >
+                          Go to Next Problem
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500">No submissions yet for this challenge.</div>
@@ -594,9 +695,8 @@ const Challenge = () => {
                 <button onClick={handleRunCode} disabled={isRunning} className="btn-primary px-4 py-2 flex items-center space-x-2">
                   {isRunning ? (<><Clock className="h-4 w-4 animate-spin" /><span>Running...</span></>) : (<><Play className="h-4 w-4" /><span>Run</span></>)}
                 </button>
-                <button onClick={handleSubmitSolution} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center space-x-2">
-                  <Play className="h-4 w-4" />
-                  <span>Submit</span>
+                <button onClick={handleSubmitSolution} disabled={isSubmitting || !(lastRunCases && lastRunCases.length)} className={`px-4 py-2 rounded-md flex items-center space-x-2 ${isSubmitting ? 'bg-green-500 cursor-wait' : 'bg-green-600 hover:bg-green-700'} text-white`}>
+                  {isSubmitting ? (<><Clock className="h-4 w-4 animate-spin" /><span>Submitting...</span></>) : (<><Play className="h-4 w-4" /><span>Submit</span></>)}
                 </button>
               </div>
             </div>

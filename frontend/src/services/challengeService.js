@@ -1,5 +1,8 @@
 import api, { handleApiResponse, handleApiError } from './api';
 
+// Cache the last Run results per challenge so Submit can include caseResults automatically
+const __lastRunByChallenge = new Map(); // key: challengeId, value: run response data
+
 /**
  * Challenge service
  * Handles coding challenges, submissions, and related operations
@@ -103,8 +106,28 @@ class ChallengeService {
    */
   async submitSolution(submission) {
     try {
-      const response = await api.post('/challenges/submit', submission);
-      return handleApiResponse(response);
+      let payload = { ...submission };
+      // Auto-attach caseResults from last run if not provided
+      if (!Array.isArray(payload.caseResults) || payload.caseResults.length === 0) {
+        const lr = __lastRunByChallenge.get(submission.challengeId);
+        if (lr?.caseResults && lr.caseResults.length) {
+          payload = { ...payload, caseResults: lr.caseResults };
+        }
+      }
+      const response = await api.post('/challenges/submit', payload);
+      const handled = handleApiResponse(response);
+      if (handled?.success) {
+        try {
+          const me = await api.get('/auth/me');
+          // attach fresh user to response so callers can refresh progress widgets
+          handled.data = { ...handled.data, user: me?.data };
+        } catch (_) {}
+        try {
+          const activity = await api.get('/profile/activity', { params: { limit: 20 } });
+          handled.data = { ...handled.data, activities: activity?.data?.activities || activity?.data || [] };
+        } catch (_) {}
+      }
+      return handled;
     } catch (error) {
       return handleApiError(error);
     }
@@ -122,7 +145,12 @@ class ChallengeService {
   async runCode(testRun) {
     try {
       const response = await api.post('/challenges/run', testRun, { timeout: 60000 });
-      return handleApiResponse(response);
+      const handled = handleApiResponse(response);
+      // Store last run per challenge for later submit
+      if (handled?.success && testRun?.challengeId) {
+        __lastRunByChallenge.set(testRun.challengeId, handled.data);
+      }
+      return handled;
     } catch (error) {
       if (import.meta.env.VITE_DEV_MODE === 'true') {
         const result = {
@@ -132,6 +160,7 @@ class ChallengeService {
           memory: (Math.random() * 20 + 10).toFixed(1),
           details: 'Test Case 1: ✅ Passed\nTest Case 2: ✅ Passed\nTest Case 3: ✅ Passed\n\nAll test cases passed! 🎉',
         };
+        if (testRun?.challengeId) __lastRunByChallenge.set(testRun.challengeId, result);
         return { success: true, data: result, status: 200 };
       }
       return handleApiError(error);
