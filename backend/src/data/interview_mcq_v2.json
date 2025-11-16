@@ -1,0 +1,1604 @@
+[
+  {
+    "topic": "OOPs",
+    "sub_topic": "Polymorphism",
+    "type": "MCQ",
+    "question": "Which type of polymorphism is achieved using method overloading?",
+    "options": ["A. Runtime polymorphism", "B. Compile-time polymorphism", "C. Dynamic polymorphism", "D. No polymorphism"],
+    "answer": "B. Compile-time polymorphism",
+    "explanation": "Method overloading is resolved at compile time based on the method signature."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Polymorphism",
+    "type": "MCQ",
+    "question": "Which OOP feature allows the same method name to behave differently in different classes?",
+    "options": ["A. Encapsulation", "B. Inheritance", "C. Polymorphism", "D. Abstraction"],
+    "answer": "C. Polymorphism",
+    "explanation": "Polymorphism allows the same interface to represent different underlying implementations."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Encapsulation",
+    "type": "MCQ",
+    "question": "Encapsulation is primarily achieved using which of the following?",
+    "options": ["A. Public fields", "B. Global variables", "C. Access modifiers and getter/setter methods", "D. Macros"],
+    "answer": "C. Access modifiers and getter/setter methods",
+    "explanation": "Encapsulation hides the internal state and exposes controlled access through methods."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Inheritance",
+    "type": "MCQ",
+    "question": "Which relationship best describes inheritance?",
+    "options": ["A. has-a", "B. is-a", "C. part-of", "D. uses-a"],
+    "answer": "B. is-a",
+    "explanation": "Inheritance models an is-a relationship where a subclass is a specialized form of its superclass."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Abstraction",
+    "type": "MCQ",
+    "question": "Which of the following is the BEST example of abstraction?",
+    "options": ["A. Public global variables", "B. A car dashboard hiding engine complexity", "C. Goto-based control flow", "D. Inline assembly code"],
+    "answer": "B. A car dashboard hiding engine complexity",
+    "explanation": "Abstraction hides complex implementation details behind a simpler interface."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "SOLID",
+    "type": "MCQ",
+    "question": "The Single Responsibility Principle states that a class should:",
+    "options": ["A. Have one and only one reason to change", "B. Handle all responsibilities in a module", "C. Contain as many methods as possible", "D. Never depend on other classes"],
+    "answer": "A. Have one and only one reason to change",
+    "explanation": "SRP focuses each class on a single responsibility to improve maintainability."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "SOLID",
+    "type": "MCQ",
+    "question": "Which SOLID principle is MOST related to 'program to an interface, not an implementation'?",
+    "options": ["A. SRP", "B. LSP", "C. ISP", "D. DIP"],
+    "answer": "D. DIP",
+    "explanation": "The Dependency Inversion Principle encourages depending on abstractions instead of concrete classes."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Design Patterns",
+    "type": "MCQ",
+    "question": "Which design pattern ensures that only one instance of a class exists and provides a global access point to it?",
+    "options": ["A. Factory Method", "B. Singleton", "C. Strategy", "D. Adapter"],
+    "answer": "B. Singleton",
+    "explanation": "The Singleton pattern restricts instantiation to a single object."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Design Patterns",
+    "type": "MCQ",
+    "question": "Which pattern defines a family of algorithms, encapsulates each one, and makes them interchangeable?",
+    "options": ["A. Strategy", "B. Observer", "C. Decorator", "D. Builder"],
+    "answer": "A. Strategy",
+    "explanation": "Strategy encapsulates algorithms so they can be swapped at runtime."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "General",
+    "type": "MCQ",
+    "question": "Which statement BEST describes an abstract class?",
+    "options": ["A. A class that cannot contain methods", "B. A class that cannot be instantiated directly", "C. A class with only static methods", "D. A class without fields"],
+    "answer": "B. A class that cannot be instantiated directly",
+    "explanation": "Abstract classes are meant to be subclassed and often contain abstract methods."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Classes & Objects",
+    "type": "MCQ",
+    "question": "What is the main purpose of a constructor in a class?",
+    "options": ["A. To destroy objects", "B. To allocate memory manually", "C. To initialize object state", "D. To handle exceptions"],
+    "answer": "C. To initialize object state",
+    "explanation": "Constructors set up initial values for fields when an object is created."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Classes & Objects",
+    "type": "MCQ",
+    "question": "Which keyword is typically used to refer to the current object inside a method?",
+    "options": ["A. self/this", "B. super", "C. base", "D. current"],
+    "answer": "A. self/this",
+    "explanation": "Many OOP languages use 'this' or 'self' to reference the current instance."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Overloading",
+    "type": "MCQ",
+    "question": "Which of the following is required for valid method overloading?",
+    "options": ["A. Same name and same parameters", "B. Same name but different parameter list", "C. Different name and different parameters", "D. Different return type only"],
+    "answer": "B. Same name but different parameter list",
+    "explanation": "Overloading is based on method signature differences (parameters), not just return type."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Overriding",
+    "type": "MCQ",
+    "question": "Method overriding is resolved at which time?",
+    "options": ["A. Compile time", "B. Link time", "C. Runtime", "D. Never resolved"],
+    "answer": "C. Runtime",
+    "explanation": "Overriding uses dynamic dispatch and is resolved when the program runs."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Inheritance",
+    "type": "MCQ",
+    "question": "Which keyword is commonly used to call the superclass constructor or method?",
+    "options": ["A. parent", "B. base", "C. super", "D. this"],
+    "answer": "C. super",
+    "explanation": "Many languages use 'super' to refer to the parent class."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Access Modifiers",
+    "type": "MCQ",
+    "question": "Which access modifier typically allows visibility only within the same class?",
+    "options": ["A. public", "B. protected", "C. private", "D. internal"],
+    "answer": "C. private",
+    "explanation": "Private members are accessible only within their own class."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Access Modifiers",
+    "type": "MCQ",
+    "question": "Which access modifier usually allows visibility to the same class and its subclasses, but not other classes?",
+    "options": ["A. public", "B. protected", "C. private", "D. package-private"],
+    "answer": "B. protected",
+    "explanation": "Protected members are visible in the class and derived classes."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Composition",
+    "type": "MCQ",
+    "question": "Composition represents which kind of relationship between objects?",
+    "options": ["A. is-a", "B. has-a (strong ownership)", "C. uses-a", "D. part-of (weak)"],
+    "answer": "B. has-a (strong ownership)",
+    "explanation": "Composition models a strong 'has-a' relationship where the lifetime of the part depends on the whole."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Aggregation",
+    "type": "MCQ",
+    "question": "Compared to composition, aggregation typically implies:",
+    "options": ["A. Stronger ownership", "B. No relationship", "C. Weaker ownership where part can exist independently", "D. Inheritance"],
+    "answer": "C. Weaker ownership where part can exist independently",
+    "explanation": "Aggregation is a weak form of composition where associated objects can outlive the container."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Interfaces",
+    "type": "MCQ",
+    "question": "What is the primary purpose of an interface in OOP?",
+    "options": ["A. To store data", "B. To provide multiple inheritance of implementation", "C. To define a contract of methods without implementation", "D. To manage memory allocation"],
+    "answer": "C. To define a contract of methods without implementation",
+    "explanation": "Interfaces specify behaviors that implementing classes must provide."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Abstract Classes",
+    "type": "MCQ",
+    "question": "Which of the following is TRUE about abstract classes?",
+    "options": ["A. They cannot have concrete methods", "B. They cannot have constructors", "C. They can contain both abstract and concrete methods", "D. They must have only static methods"],
+    "answer": "C. They can contain both abstract and concrete methods",
+    "explanation": "Abstract classes can mix abstract and fully implemented methods."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Virtual Functions",
+    "type": "MCQ",
+    "question": "Virtual methods (or dynamic methods) are primarily used to:",
+    "options": ["A. Reduce memory usage", "B. Enable runtime polymorphism", "C. Prevent overriding", "D. Perform static analysis"],
+    "answer": "B. Enable runtime polymorphism",
+    "explanation": "Virtual methods allow derived classes to override behavior and be called via base references."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Immutability",
+    "type": "MCQ",
+    "question": "Which statement is TRUE about immutable objects?",
+    "options": ["A. Their state can be changed after construction", "B. They are always thread-unsafe", "C. They cannot be serialized", "D. Their state cannot change after construction"],
+    "answer": "D. Their state cannot change after construction",
+    "explanation": "Immutability means fields cannot be modified once the object is created."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Constructors",
+    "type": "MCQ",
+    "question": "Constructor overloading allows you to:",
+    "options": ["A. Create multiple classes with the same name", "B. Provide different ways to initialize an object", "C. Override methods in subclasses", "D. Access private variables directly"],
+    "answer": "B. Provide different ways to initialize an object",
+    "explanation": "Overloaded constructors accept different parameter lists for flexible initialization."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Destructors",
+    "type": "MCQ",
+    "question": "A destructor (or finalizer) is mainly responsible for:",
+    "options": ["A. Allocating dynamic memory", "B. Releasing resources before an object is destroyed", "C. Creating new objects", "D. Compiling the program"],
+    "answer": "B. Releasing resources before an object is destroyed",
+    "explanation": "Destructors free unmanaged resources such as file handles or network connections."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Static Members",
+    "type": "MCQ",
+    "question": "Static methods in a class:",
+    "options": ["A. Can only be called on instances", "B. Share the same storage across all instances", "C. Cannot access any data", "D. Are always private"],
+    "answer": "B. Share the same storage across all instances",
+    "explanation": "Static members belong to the class itself rather than a specific object."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "LSP",
+    "type": "MCQ",
+    "question": "The Liskov Substitution Principle requires that:",
+    "options": ["A. Subclasses add new methods only", "B. Subclasses must be usable wherever the base class is expected", "C. Subclasses cannot override methods", "D. Subclasses must be final"],
+    "answer": "B. Subclasses must be usable wherever the base class is expected",
+    "explanation": "LSP ensures substitutability without breaking client code assumptions."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "ISP",
+    "type": "MCQ",
+    "question": "According to the Interface Segregation Principle, interfaces should:",
+    "options": ["A. Be as large as possible", "B. Group unrelated methods together", "C. Be small and focused on specific client needs", "D. Never be changed"],
+    "answer": "C. Be small and focused on specific client needs",
+    "explanation": "ISP avoids 'fat' interfaces and forces clients to depend only on what they use."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "DIP",
+    "type": "MCQ",
+    "question": "A common way to implement the Dependency Inversion Principle in code is:",
+    "options": ["A. Using global variables", "B. Using dependency injection containers or constructors", "C. Using more inheritance", "D. Using macros"],
+    "answer": "B. Using dependency injection containers or constructors",
+    "explanation": "Dependencies are provided via abstractions rather than created directly inside classes."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Observer Pattern",
+    "type": "MCQ",
+    "question": "The Observer pattern is MOST suitable when:",
+    "options": ["A. You need exactly one instance", "B. Many objects must be notified when another object changes", "C. You want to hide implementation details", "D. You need to convert one interface to another"],
+    "answer": "B. Many objects must be notified when another object changes",
+    "explanation": "Observer defines a one-to-many dependency for event notifications."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Decorator Pattern",
+    "type": "MCQ",
+    "question": "The Decorator pattern allows you to:",
+    "options": ["A. Change a class's base type at runtime", "B. Add responsibilities to objects dynamically", "C. Build complex objects in steps", "D. Choose algorithms at runtime"],
+    "answer": "B. Add responsibilities to objects dynamically",
+    "explanation": "Decorator wraps objects to extend behavior without changing their class."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Adapter Pattern",
+    "type": "MCQ",
+    "question": "The Adapter pattern is used when:",
+    "options": ["A. Two interfaces are incompatible but need to work together", "B. You want to ensure exactly one instance", "C. You want to cache objects", "D. You want to run code in parallel"],
+    "answer": "A. Two interfaces are incompatible but need to work together",
+    "explanation": "Adapter converts one interface into another expected by clients."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Factory Method",
+    "type": "MCQ",
+    "question": "Factory Method pattern helps with:",
+    "options": ["A. Directly instantiating concrete classes everywhere", "B. Centralizing object creation behind an interface", "C. Avoiding polymorphism", "D. Eliminating subclassing"],
+    "answer": "B. Centralizing object creation behind an interface",
+    "explanation": "Factory Method lets subclasses decide which class to instantiate."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Error Handling",
+    "type": "MCQ",
+    "question": "In OOP design, exceptions are typically used to:",
+    "options": ["A. Control normal flow of the program", "B. Signal and handle abnormal or error conditions", "C. Replace all return values", "D. Allocate memory dynamically"],
+    "answer": "B. Signal and handle abnormal or error conditions",
+    "explanation": "Exceptions separate error-handling logic from normal control flow."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Cohesion",
+    "type": "MCQ",
+    "question": "High cohesion in a class means that:",
+    "options": ["A. The class does many unrelated things", "B. The class has very few methods", "C. The class's responsibilities are closely related and focused", "D. The class has no dependencies"],
+    "answer": "C. The class's responsibilities are closely related and focused",
+    "explanation": "High cohesion improves readability and maintainability."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Coupling",
+    "type": "MCQ",
+    "question": "Low coupling between classes generally means:",
+    "options": ["A. Classes are highly dependent on each other's internal details", "B. Classes can be changed independently with minimal impact", "C. Classes are all in one file", "D. Classes share many global variables"],
+    "answer": "B. Classes can be changed independently with minimal impact",
+    "explanation": "Low coupling reduces ripple effects when changing code."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "DTO",
+    "type": "MCQ",
+    "question": "A Data Transfer Object (DTO) is primarily used to:",
+    "options": ["A. Perform business logic in the domain layer", "B. Transfer structured data between layers or services", "C. Replace all entities", "D. Manage database connections"],
+    "answer": "B. Transfer structured data between layers or services",
+    "explanation": "DTOs are simple objects that carry data without behavior."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Equals & HashCode",
+    "type": "MCQ",
+    "question": "When overriding an equality method (like equals), you should also typically override:",
+    "options": ["A. The constructor", "B. The hashCode method", "C. The toString method", "D. The main method"],
+    "answer": "B. The hashCode method",
+    "explanation": "Equal objects must have equal hash codes when used in hash-based collections."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "ToString",
+    "type": "MCQ",
+    "question": "Overriding a toString()/__str__ method is helpful because:",
+    "options": ["A. It improves performance", "B. It controls how objects are garbage-collected", "C. It provides meaningful string representations for debugging and logging", "D. It changes object identity"],
+    "answer": "C. It provides meaningful string representations for debugging and logging",
+    "explanation": "Custom string output makes logs and debugging more informative."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Multiple Inheritance",
+    "type": "MCQ",
+    "question": "Which issue is commonly associated with multiple inheritance of classes?",
+    "options": ["A. Lack of polymorphism", "B. Diamond problem and ambiguity", "C. No access to private members", "D. No constructors"],
+    "answer": "B. Diamond problem and ambiguity",
+    "explanation": "Multiple inheritance can cause ambiguity when two parent classes define the same method."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Mixins",
+    "type": "MCQ",
+    "question": "Mixins are typically used to:",
+    "options": ["A. Implement data persistence", "B. Provide reusable chunks of behavior that can be combined with classes", "C. Replace inheritance entirely", "D. Manage memory allocation"],
+    "answer": "B. Provide reusable chunks of behavior that can be combined with classes",
+    "explanation": "Mixins are small classes designed to be combined with others to extend functionality."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Encapsulation",
+    "type": "MCQ",
+    "question": "Which of the following breaks encapsulation?",
+    "options": ["A. Using private fields with getters", "B. Using public fields directly", "C. Using methods to modify internal state", "D. Hiding implementation behind an interface"],
+    "answer": "B. Using public fields directly",
+    "explanation": "Public fields expose internal state directly, bypassing control logic."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Refactoring",
+    "type": "MCQ",
+    "question": "Extracting common behavior from two classes into a new base class is an example of:",
+    "options": ["A. Refactoring towards inheritance", "B. Refactoring towards composition only", "C. Anti-pattern", "D. Eliminating polymorphism"],
+    "answer": "A. Refactoring towards inheritance",
+    "explanation": "Common behavior can be moved into a shared superclass to reduce duplication."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Encapsulation",
+    "type": "MCQ",
+    "question": "Which pattern commonly helps encapsulate complex object creation logic?",
+    "options": ["A. Observer", "B. Builder", "C. Iterator", "D. Visitor"],
+    "answer": "B. Builder",
+    "explanation": "The Builder pattern encapsulates the construction of complex objects step by step."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "General",
+    "type": "MCQ",
+    "question": "Which benefit is commonly associated with using OOP in large systems?",
+    "options": ["A. No need for design", "B. Better modularity and reusability", "C. Guaranteed performance improvements", "D. No bugs"],
+    "answer": "B. Better modularity and reusability",
+    "explanation": "OOP supports organizing code into reusable, modular components."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "General",
+    "type": "MCQ",
+    "question": "Which of the following is NOT considered a core OOP principle?",
+    "options": ["A. Inheritance", "B. Polymorphism", "C. Encapsulation", "D. Compilation"],
+    "answer": "D. Compilation",
+    "explanation": "Compilation is a language/tool concept, not an OOP principle."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Polymorphism",
+    "type": "MCQ",
+    "question": "Dynamic dispatch chooses which method implementation to call based on:",
+    "options": ["A. The static type of the reference", "B. The runtime type of the object", "C. The file name", "D. The compiler version"],
+    "answer": "B. The runtime type of the object",
+    "explanation": "Runtime polymorphism uses the actual object's type to pick the overridden method."
+  },
+  {
+    "topic": "OOPs",
+    "sub_topic": "Abstraction",
+    "type": "MCQ",
+    "question": "Abstraction primarily helps to:",
+    "options": ["A. Expose implementation details", "B. Hide irrelevant details and show essential features", "C. Increase coupling", "D. Remove all methods"],
+    "answer": "B. Hide irrelevant details and show essential features",
+    "explanation": "Abstraction focuses on what an object does, not how it does it."
+  },
+    {
+    "topic": "Computer Networks",
+    "sub_topic": "Basics",
+    "type": "MCQ",
+    "question": "Which device primarily operates at the Data Link layer of the OSI model?",
+    "options": ["A. Router", "B. Switch", "C. Repeater", "D. Gateway"],
+    "answer": "B. Switch",
+    "explanation": "Switches operate mainly at Layer 2 using MAC addresses to forward frames."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "OSI Model",
+    "type": "MCQ",
+    "question": "How many layers are in the OSI reference model?",
+    "options": ["A. 3", "B. 4", "C. 5", "D. 7"],
+    "answer": "D. 7",
+    "explanation": "The OSI model has seven layers, from Physical to Application."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "OSI Model",
+    "type": "MCQ",
+    "question": "Which OSI layer is responsible for end-to-end logical addressing and routing?",
+    "options": ["A. Data Link", "B. Network", "C. Transport", "D. Session"],
+    "answer": "B. Network",
+    "explanation": "The Network layer handles logical addressing (IP) and routing."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "TCP vs UDP",
+    "type": "MCQ",
+    "question": "Which protocol provides reliable, connection-oriented service?",
+    "options": ["A. UDP", "B. IP", "C. TCP", "D. ARP"],
+    "answer": "C. TCP",
+    "explanation": "TCP is connection-oriented and guarantees reliable ordered delivery."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "TCP vs UDP",
+    "type": "MCQ",
+    "question": "Which of the following is MOST suitable for real-time streaming where some loss is acceptable?",
+    "options": ["A. TCP", "B. UDP", "C. SMTP", "D. FTP"],
+    "answer": "B. UDP",
+    "explanation": "UDP avoids retransmissions and is often used for latency-sensitive streaming."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "TCP",
+    "type": "MCQ",
+    "question": "How many steps are involved in the TCP three-way handshake?",
+    "options": ["A. 1", "B. 2", "C. 3", "D. 4"],
+    "answer": "C. 3",
+    "explanation": "The handshake uses SYN, SYN-ACK, and ACK to establish a TCP connection."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "TCP",
+    "type": "MCQ",
+    "question": "Which field in TCP header is used for flow control?",
+    "options": ["A. Sequence number", "B. Acknowledgment number", "C. Window size", "D. Urgent pointer"],
+    "answer": "C. Window size",
+    "explanation": "The receiver’s advertised window size controls how much data the sender can transmit."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "TCP",
+    "type": "MCQ",
+    "question": "Which mechanism helps TCP avoid congestion collapse?",
+    "options": ["A. Parity bit", "B. Congestion control algorithms", "C. Checksum", "D. CSMA/CD"],
+    "answer": "B. Congestion control algorithms",
+    "explanation": "Algorithms like slow start and congestion avoidance regulate sending rate."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "UDP",
+    "type": "MCQ",
+    "question": "Which is TRUE about UDP?",
+    "options": ["A. Connection-oriented and reliable", "B. Connectionless and unreliable", "C. Connection-oriented and unreliable", "D. Connectionless and reliable"],
+    "answer": "B. Connectionless and unreliable",
+    "explanation": "UDP provides no built-in reliability or connection setup."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "IP Addressing",
+    "type": "MCQ",
+    "question": "Which of the following is a private IPv4 address?",
+    "options": ["A. 8.8.8.8", "B. 172.16.5.10", "C. 11.0.0.1", "D. 200.1.1.1"],
+    "answer": "B. 172.16.5.10",
+    "explanation": "172.16.0.0–172.31.255.255 is reserved for private use."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "IP Addressing",
+    "type": "MCQ",
+    "question": "Which class does the IPv4 address 192.168.1.1 originally belong to?",
+    "options": ["A. Class A", "B. Class B", "C. Class C", "D. Class D"],
+    "answer": "C. Class C",
+    "explanation": "Class C addresses range from 192.0.0.0 to 223.255.255.255."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Subnetting",
+    "type": "MCQ",
+    "question": "A subnet mask of 255.255.255.0 corresponds to which prefix length?",
+    "options": ["A. /8", "B. /16", "C. /24", "D. /32"],
+    "answer": "C. /24",
+    "explanation": "/24 means 24 bits are used for the network portion."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Subnetting",
+    "type": "MCQ",
+    "question": "How many usable host addresses are available in a /26 IPv4 subnet?",
+    "options": ["A. 32", "B. 62", "C. 64", "D. 126"],
+    "answer": "B. 62",
+    "explanation": "A /26 has 64 addresses, minus network and broadcast ⇒ 62 usable."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Routing",
+    "type": "MCQ",
+    "question": "Which device makes forwarding decisions based on IP addresses?",
+    "options": ["A. Hub", "B. Switch", "C. Router", "D. Repeater"],
+    "answer": "C. Router",
+    "explanation": "Routers operate at Layer 3 and use IP addresses to route packets."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Routing",
+    "type": "MCQ",
+    "question": "Which is a distance-vector routing protocol?",
+    "options": ["A. OSPF", "B. RIP", "C. IS-IS", "D. BGP"],
+    "answer": "B. RIP",
+    "explanation": "RIP is a classic distance-vector protocol using hop count as metric."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Routing",
+    "type": "MCQ",
+    "question": "Which routing protocol uses Dijkstra’s algorithm and link-state advertisements?",
+    "options": ["A. RIP", "B. OSPF", "C. RIPv2", "D. EIGRP"],
+    "answer": "B. OSPF",
+    "explanation": "OSPF is a link-state protocol that runs shortest-path first (Dijkstra)."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Switching",
+    "type": "MCQ",
+    "question": "Which device reduces collision domains compared to a hub by using MAC address tables?",
+    "options": ["A. Router", "B. Switch", "C. Bridge", "D. Modem"],
+    "answer": "B. Switch",
+    "explanation": "Switches forward frames only to specific ports, reducing collisions."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "LAN Technologies",
+    "type": "MCQ",
+    "question": "CSMA/CD was mainly used in which type of network?",
+    "options": ["A. Token Ring", "B. Modern switched Ethernet", "C. Legacy shared Ethernet (hub-based)", "D. Wi-Fi"],
+    "answer": "C. Legacy shared Ethernet (hub-based)",
+    "explanation": "CSMA/CD detects collisions on shared Ethernet media."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "VLAN",
+    "type": "MCQ",
+    "question": "What is the main purpose of a VLAN?",
+    "options": ["A. Increase physical cable length", "B. Logically separate broadcast domains", "C. Encrypt all traffic", "D. Replace routing protocols"],
+    "answer": "B. Logically separate broadcast domains",
+    "explanation": "VLANs segment a physical network into multiple logical broadcast domains."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "ARP",
+    "type": "MCQ",
+    "question": "What is the role of ARP in IPv4 networks?",
+    "options": ["A. Resolve domain names to IP", "B. Map IP addresses to MAC addresses", "C. Assign dynamic IP addresses", "D. Provide encryption"],
+    "answer": "B. Map IP addresses to MAC addresses",
+    "explanation": "ARP discovers the MAC address corresponding to an IPv4 address on the local network."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "DNS",
+    "type": "MCQ",
+    "question": "What does a DNS A record map?",
+    "options": ["A. Hostname to IPv4 address", "B. Hostname to mail server", "C. Hostname to IPv6 address", "D. Hostname to alias"],
+    "answer": "A. Hostname to IPv4 address",
+    "explanation": "An A record maps a domain to an IPv4 address; AAAA maps to IPv6."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "DNS",
+    "type": "MCQ",
+    "question": "Which DNS record type specifies the mail server responsible for a domain?",
+    "options": ["A. A", "B. MX", "C. CNAME", "D. TXT"],
+    "answer": "B. MX",
+    "explanation": "MX records list mail exchange servers for a domain."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "DHCP",
+    "type": "MCQ",
+    "question": "What is the main purpose of DHCP?",
+    "options": ["A. Resolve hostnames", "B. Dynamically assign IP configuration to clients", "C. Translate IP to MAC", "D. Encrypt traffic"],
+    "answer": "B. Dynamically assign IP configuration to clients",
+    "explanation": "DHCP automates assignment of IP address, gateway, and DNS configuration."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "HTTP",
+    "type": "MCQ",
+    "question": "Which HTTP method is idempotent and typically used to replace a resource completely?",
+    "options": ["A. POST", "B. GET", "C. PUT", "D. PATCH"],
+    "answer": "C. PUT",
+    "explanation": "PUT is idempotent and usually replaces the entire resource."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "HTTP",
+    "type": "MCQ",
+    "question": "Which HTTP status code indicates a successful request?",
+    "options": ["A. 200", "B. 301", "C. 400", "D. 500"],
+    "answer": "A. 200",
+    "explanation": "Status code 200 OK indicates success."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "HTTP",
+    "type": "MCQ",
+    "question": "Which status code indicates that the requested resource was not found on the server?",
+    "options": ["A. 200", "B. 301", "C. 404", "D. 500"],
+    "answer": "C. 404",
+    "explanation": "404 Not Found is returned when the server cannot find the requested resource."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "HTTPS & TLS",
+    "type": "MCQ",
+    "question": "HTTPS is essentially:",
+    "options": ["A. HTTP over TCP", "B. HTTP over UDP", "C. HTTP over TLS/SSL", "D. HTTP over ARP"],
+    "answer": "C. HTTP over TLS/SSL",
+    "explanation": "HTTPS wraps HTTP inside a TLS/SSL encrypted channel."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "HTTPS & TLS",
+    "type": "MCQ",
+    "question": "Which of the following provides confidentiality and integrity for web traffic?",
+    "options": ["A. HTTP", "B. HTTPS", "C. FTP", "D. Telnet"],
+    "answer": "B. HTTPS",
+    "explanation": "HTTPS uses TLS to encrypt and protect web traffic."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Security",
+    "type": "MCQ",
+    "question": "Which attack attempts to exhaust a system’s resources to make a service unavailable?",
+    "options": ["A. SQL Injection", "B. XSS", "C. DoS", "D. CSRF"],
+    "answer": "C. DoS",
+    "explanation": "Denial of Service attacks flood or overload a target to disrupt service."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Security",
+    "type": "MCQ",
+    "question": "Which protocol is commonly used to securely manage network devices over the network?",
+    "options": ["A. Telnet", "B. HTTP", "C. SSH", "D. FTP"],
+    "answer": "C. SSH",
+    "explanation": "SSH provides secure remote login and command execution."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Security",
+    "type": "MCQ",
+    "question": "Which technology is widely used to create secure tunnels over an untrusted network like the Internet?",
+    "options": ["A. VLAN", "B. VPN", "C. NAT", "D. DHCP"],
+    "answer": "B. VPN",
+    "explanation": "VPNs create encrypted tunnels between endpoints over public networks."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "NAT",
+    "type": "MCQ",
+    "question": "Network Address Translation (NAT) is primarily used to:",
+    "options": ["A. Encrypt traffic", "B. Map private IPs to public IPs", "C. Assign DNS names", "D. Detect collisions"],
+    "answer": "B. Map private IPs to public IPs",
+    "explanation": "NAT allows many private hosts to share a smaller number of public addresses."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Wireless",
+    "type": "MCQ",
+    "question": "Which Wi-Fi standard operates primarily in the 5 GHz band and supports high throughput?",
+    "options": ["A. 802.11b", "B. 802.11g", "C. 802.11n", "D. 802.11ac"],
+    "answer": "D. 802.11ac",
+    "explanation": "802.11ac works mainly in 5 GHz with higher data rates."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Wireless",
+    "type": "MCQ",
+    "question": "Which security protocol is recommended today for securing Wi-Fi networks?",
+    "options": ["A. WEP", "B. WPA", "C. WPA2/WPA3", "D. Open (no security)"],
+    "answer": "C. WPA2/WPA3",
+    "explanation": "WPA2 and WPA3 provide strong encryption and authentication."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "QoS",
+    "type": "MCQ",
+    "question": "Which metric is MOST critical for real-time voice traffic?",
+    "options": ["A. High throughput", "B. Low latency and jitter", "C. High packet loss", "D. Large MTU size"],
+    "answer": "B. Low latency and jitter",
+    "explanation": "VoIP is very sensitive to delay and variation in delay (jitter)."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Performance",
+    "type": "MCQ",
+    "question": "Which term refers to the time it takes for a packet to travel from source to destination?",
+    "options": ["A. Bandwidth", "B. Latency", "C. Throughput", "D. Jitter"],
+    "answer": "B. Latency",
+    "explanation": "Latency is the one-way or round-trip delay experienced by packets."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Performance",
+    "type": "MCQ",
+    "question": "Throughput is BEST described as:",
+    "options": ["A. Theoretical maximum speed of the medium", "B. Actual rate of successful data transfer", "C. Number of collisions per second", "D. Packet loss percentage"],
+    "answer": "B. Actual rate of successful data transfer",
+    "explanation": "Throughput measures real data delivered per unit time."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "ICMP",
+    "type": "MCQ",
+    "question": "Which tool uses ICMP Echo Request and Echo Reply messages to test reachability?",
+    "options": ["A. traceroute", "B. ping", "C. nslookup", "D. telnet"],
+    "answer": "B. ping",
+    "explanation": "ping uses ICMP echo messages to verify if a host is reachable."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "ICMP",
+    "type": "MCQ",
+    "question": "Which command often uses varying TTL values to discover the path to a destination?",
+    "options": ["A. ping", "B. traceroute", "C. arp", "D. netstat"],
+    "answer": "B. traceroute",
+    "explanation": "traceroute sends packets with increasing TTL to reveal each hop."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Transport Layer",
+    "type": "MCQ",
+    "question": "Which layer in the TCP/IP model is responsible for end-to-end communication and port numbers?",
+    "options": ["A. Network", "B. Transport", "C. Internet", "D. Application"],
+    "answer": "B. Transport",
+    "explanation": "The transport layer handles ports, reliability, and segmentation."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Application Layer",
+    "type": "MCQ",
+    "question": "Which protocol is commonly used for sending email from client to server?",
+    "options": ["A. POP3", "B. IMAP", "C. SMTP", "D. HTTP"],
+    "answer": "C. SMTP",
+    "explanation": "SMTP is used for sending email between clients and servers."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Application Layer",
+    "type": "MCQ",
+    "question": "Which protocol is used by web browsers to fetch web pages?",
+    "options": ["A. FTP", "B. HTTP", "C. DNS", "D. DHCP"],
+    "answer": "B. HTTP",
+    "explanation": "HTTP is the main application-layer protocol used by browsers."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "CDN",
+    "type": "MCQ",
+    "question": "The primary purpose of a Content Delivery Network (CDN) is to:",
+    "options": ["A. Encrypt all traffic", "B. Reduce latency by caching content closer to users", "C. Provide routing between ISPs", "D. Assign IP addresses"],
+    "answer": "B. Reduce latency by caching content closer to users",
+    "explanation": "CDNs distribute content across edge servers near end-users."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "WebSockets",
+    "type": "MCQ",
+    "question": "WebSocket differs from HTTP primarily because it:",
+    "options": ["A. Uses UDP instead of TCP", "B. Establishes a persistent full-duplex connection", "C. Cannot be used in browsers", "D. Does not require a handshake"],
+    "answer": "B. Establishes a persistent full-duplex connection",
+    "explanation": "WebSockets maintain a long-lived TCP connection for bidirectional communication."
+  },
+  {
+    "topic": "Computer Networks",
+    "sub_topic": "Load Balancing",
+    "type": "MCQ",
+    "question": "Layer 7 (application-layer) load balancers can:",
+    "options": ["A. Only inspect IP addresses", "B. Make routing decisions based on URLs or headers", "C. Replace DNS servers", "D. Assign MAC addresses"],
+    "answer": "B. Make routing decisions based on URLs or headers",
+    "explanation": "L7 load balancers inspect application data to route requests intelligently."
+  },
+    {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Algorithms",
+    "type": "MCQ",
+    "question": "What is the average time complexity of quicksort?",
+    "options": ["A. O(n)", "B. O(n log n)", "C. O(n^2)", "D. O(log n)"],
+    "answer": "B. O(n log n)",
+    "explanation": "Quicksort has an average time complexity of O(n log n), although the worst case is O(n^2)."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Algorithms",
+    "type": "MCQ",
+    "question": "Which sorting algorithm is guaranteed O(n log n) time in the worst case?",
+    "options": ["A. Bubble sort", "B. Insertion sort", "C. Merge sort", "D. Selection sort"],
+    "answer": "C. Merge sort",
+    "explanation": "Merge sort divides and merges arrays and guarantees O(n log n) in all cases."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Algorithms",
+    "type": "MCQ",
+    "question": "Which algorithm strategy solves problems by combining optimal solutions to subproblems with overlapping subproblems?",
+    "options": ["A. Greedy", "B. Divide and conquer", "C. Dynamic programming", "D. Brute force"],
+    "answer": "C. Dynamic programming",
+    "explanation": "Dynamic programming stores results of overlapping subproblems to avoid recomputation."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Algorithms",
+    "type": "MCQ",
+    "question": "Which of the following is a greedy algorithm?",
+    "options": ["A. Dijkstra's shortest path (non-negative weights)", "B. Merge sort", "C. Quickselect", "D. Floyd–Warshall"],
+    "answer": "A. Dijkstra's shortest path (non-negative weights)",
+    "explanation": "Dijkstra's algorithm repeatedly chooses the closest unvisited node, a greedy choice."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Time Complexity",
+    "type": "MCQ",
+    "question": "Which of the following Big-O notations grows the fastest as n increases?",
+    "options": ["A. O(log n)", "B. O(n)", "C. O(n log n)", "D. O(2^n)"],
+    "answer": "D. O(2^n)",
+    "explanation": "Exponential time grows much faster than polynomial or logarithmic time."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Time Complexity",
+    "type": "MCQ",
+    "question": "What is the time complexity of binary search on a sorted array?",
+    "options": ["A. O(1)", "B. O(log n)", "C. O(n)", "D. O(n log n)"],
+    "answer": "B. O(log n)",
+    "explanation": "Binary search halves the search space at each step."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Time Complexity",
+    "type": "MCQ",
+    "question": "If an algorithm performs a constant amount of work regardless of input size, its complexity is:",
+    "options": ["A. O(1)", "B. O(log n)", "C. O(n)", "D. O(n^2)"],
+    "answer": "A. O(1)",
+    "explanation": "Constant time complexity does not depend on n."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Data Structures",
+    "type": "MCQ",
+    "question": "Which data structure is MOST appropriate for implementing a FIFO queue?",
+    "options": ["A. Stack", "B. Linked List", "C. Binary Tree", "D. Hash Table"],
+    "answer": "B. Linked List",
+    "explanation": "A linked list allows efficient insertion at the tail and removal from the head."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Data Structures",
+    "type": "MCQ",
+    "question": "Which data structure provides O(1) average time complexity for insertion and search, assuming a good hash function?",
+    "options": ["A. Array", "B. Hash table", "C. Binary search tree", "D. Heap"],
+    "answer": "B. Hash table",
+    "explanation": "Hash tables provide average O(1) operations with low collision rates."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Data Structures",
+    "type": "MCQ",
+    "question": "Which data structure is MOST suitable for implementing a call stack in a program?",
+    "options": ["A. Queue", "B. Stack", "C. Linked list", "D. Graph"],
+    "answer": "B. Stack",
+    "explanation": "Function calls follow LIFO order, which is naturally modeled by a stack."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Data Structures",
+    "type": "MCQ",
+    "question": "Which of the following is TRUE about a min-heap?",
+    "options": ["A. Parent is always larger than children", "B. It is always a binary search tree", "C. The smallest element is always at the root", "D. The largest element is always at the root"],
+    "answer": "C. The smallest element is always at the root",
+    "explanation": "In a min-heap, the root contains the minimum element."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Data Structures",
+    "type": "MCQ",
+    "question": "In a balanced binary search tree, what is the average time complexity for search?",
+    "options": ["A. O(1)", "B. O(log n)", "C. O(n)", "D. O(n log n)"],
+    "answer": "B. O(log n)",
+    "explanation": "Balanced BSTs keep height proportional to log n."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Recursion",
+    "type": "MCQ",
+    "question": "Which of the following is required for a recursive function to terminate?",
+    "options": ["A. A base case", "B. At least two parameters", "C. A loop inside the function", "D. Tail-call optimization"],
+    "answer": "A. A base case",
+    "explanation": "Without a base case, recursion may never stop."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Recursion",
+    "type": "MCQ",
+    "question": "Which classic problem is typically solved using recursion and backtracking?",
+    "options": ["A. Linear search", "B. N-Queens problem", "C. Insertion sort", "D. BFS"],
+    "answer": "B. N-Queens problem",
+    "explanation": "N-Queens is often solved with recursive backtracking."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Graphs",
+    "type": "MCQ",
+    "question": "Which traversal technique is typically used to find the shortest path in an unweighted graph?",
+    "options": ["A. DFS", "B. BFS", "C. Dijkstra", "D. Bellman–Ford"],
+    "answer": "B. BFS",
+    "explanation": "Breadth-first search discovers vertices in increasing distance from the source in unweighted graphs."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Graphs",
+    "type": "MCQ",
+    "question": "Which algorithm finds the shortest path in a weighted graph with non-negative edge weights?",
+    "options": ["A. DFS", "B. BFS", "C. Dijkstra", "D. Kruskal"],
+    "answer": "C. Dijkstra",
+    "explanation": "Dijkstra's algorithm computes shortest paths in graphs with non-negative weights."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Graphs",
+    "type": "MCQ",
+    "question": "Which algorithm is typically used to find a minimum spanning tree?",
+    "options": ["A. Prim or Kruskal", "B. Dijkstra", "C. Bellman–Ford", "D. Floyd–Warshall"],
+    "answer": "A. Prim or Kruskal",
+    "explanation": "Prim and Kruskal are classic MST algorithms."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Complexity Classes",
+    "type": "MCQ",
+    "question": "Which of the following is TRUE about NP-complete problems?",
+    "options": ["A. They can all be solved in polynomial time", "B. No NP-complete problem can be solved", "C. If one NP-complete problem has a polynomial-time solution, all do", "D. They are all undecidable"],
+    "answer": "C. If one NP-complete problem has a polynomial-time solution, all do",
+    "explanation": "NP-complete problems are inter-reducible; a polynomial-time solution to one implies polynomial-time solutions to all."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Complexity Classes",
+    "type": "MCQ",
+    "question": "P is the class of decision problems that are:",
+    "options": ["A. Solvable in polynomial time", "B. Solvable only in exponential time", "C. Undecidable", "D. Solvable only using randomness"],
+    "answer": "A. Solvable in polynomial time",
+    "explanation": "P consists of problems solvable in time polynomial in input size."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Bit Manipulation",
+    "type": "MCQ",
+    "question": "Which operation can efficiently toggle the i-th bit of an integer n?",
+    "options": ["A. n & (1 << i)", "B. n | (1 << i)", "C. n ^ (1 << i)", "D. n >> i"],
+    "answer": "C. n ^ (1 << i)",
+    "explanation": "XOR with a mask flips the corresponding bit: 1 becomes 0 and 0 becomes 1."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Bit Manipulation",
+    "type": "MCQ",
+    "question": "Which bitwise operator is used to clear (set to 0) specific bits?",
+    "options": ["A. AND with a mask", "B. OR with a mask", "C. XOR with a mask", "D. Left shift"],
+    "answer": "A. AND with a mask",
+    "explanation": "ANDing with a mask that has 0s in positions to clear sets those bits to 0."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Memory",
+    "type": "MCQ",
+    "question": "Which memory region typically stores function call frames and local variables?",
+    "options": ["A. Heap", "B. Stack", "C. Static storage", "D. Cache"],
+    "answer": "B. Stack",
+    "explanation": "The stack holds activation records (call frames) and automatic local variables."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Memory",
+    "type": "MCQ",
+    "question": "Dynamic memory allocation (e.g., malloc/new) usually obtains memory from:",
+    "options": ["A. Stack", "B. Heap", "C. CPU registers", "D. ROM"],
+    "answer": "B. Heap",
+    "explanation": "Dynamically allocated objects live in the heap until freed."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Operating Systems",
+    "type": "MCQ",
+    "question": "Which scheduling algorithm may cause starvation for low-priority processes?",
+    "options": ["A. First-Come-First-Served", "B. Round Robin", "C. Priority Scheduling", "D. Shortest Job First (non-preemptive)"],
+    "answer": "C. Priority Scheduling",
+    "explanation": "If high-priority jobs keep arriving, low-priority jobs may starve."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Operating Systems",
+    "type": "MCQ",
+    "question": "Which of the following is NOT a necessary condition for deadlock?",
+    "options": ["A. Mutual exclusion", "B. Hold and wait", "C. Preemption", "D. Circular wait"],
+    "answer": "C. Preemption",
+    "explanation": "Deadlock requires mutual exclusion, hold and wait, no preemption, and circular wait."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Operating Systems",
+    "type": "MCQ",
+    "question": "Virtual memory is primarily used to:",
+    "options": ["A. Increase CPU speed", "B. Allow programs to use more memory than physically available", "C. Reduce disk usage", "D. Eliminate caches"],
+    "answer": "B. Allow programs to use more memory than physically available",
+    "explanation": "Virtual memory gives processes a larger virtual address space than physical RAM."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Operating Systems",
+    "type": "MCQ",
+    "question": "Context switching occurs when:",
+    "options": ["A. An interrupt or scheduler switches the CPU from one process to another", "B. A process allocates memory", "C. The OS boots", "D. A program reads from disk"],
+    "answer": "A. An interrupt or scheduler switches the CPU from one process to another",
+    "explanation": "Context switching saves and restores CPU state for different processes or threads."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Databases",
+    "type": "MCQ",
+    "question": "Which normal form eliminates partial dependency of non-key attributes on a composite key?",
+    "options": ["A. 1NF", "B. 2NF", "C. 3NF", "D. BCNF"],
+    "answer": "B. 2NF",
+    "explanation": "2NF removes partial dependencies on a composite primary key."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Databases",
+    "type": "MCQ",
+    "question": "Which property of ACID ensures that a transaction's changes are recorded in permanent storage?",
+    "options": ["A. Atomicity", "B. Consistency", "C. Isolation", "D. Durability"],
+    "answer": "D. Durability",
+    "explanation": "Durability guarantees that committed data survives subsequent failures."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Databases",
+    "type": "MCQ",
+    "question": "An index on a column in a large table is primarily used to:",
+    "options": ["A. Reduce storage size", "B. Speed up search queries", "C. Enforce foreign keys", "D. Prevent deadlocks"],
+    "answer": "B. Speed up search queries",
+    "explanation": "Indexes allow faster lookups by avoiding full table scans."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Concurrency",
+    "type": "MCQ",
+    "question": "A race condition occurs when:",
+    "options": ["A. Two processes have the same priority", "B. Program output depends on the timing/order of access to shared data", "C. A CPU runs at maximum speed", "D. Threads never block"],
+    "answer": "B. Program output depends on the timing/order of access to shared data",
+    "explanation": "Race conditions arise when unsynchronized concurrent accesses change results."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Concurrency",
+    "type": "MCQ",
+    "question": "Which synchronization primitive ensures that only one thread can enter a critical section at a time?",
+    "options": ["A. Semaphore", "B. Mutex/lock", "C. Barrier", "D. Condition variable"],
+    "answer": "B. Mutex/lock",
+    "explanation": "Mutexes provide mutual exclusion for critical sections."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Distributed Systems",
+    "type": "MCQ",
+    "question": "According to the CAP theorem, which three properties cannot be fully achieved simultaneously in a distributed system?",
+    "options": ["A. Consistency, Availability, Partition tolerance", "B. Concurrency, Accuracy, Partition tolerance", "C. Cache, Availability, Performance", "D. Consistency, Accuracy, Performance"],
+    "answer": "A. Consistency, Availability, Partition tolerance",
+    "explanation": "CAP states you can have at most two of C, A, and P at the same time under network partitions."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Distributed Systems",
+    "type": "MCQ",
+    "question": "Eventual consistency means that:",
+    "options": ["A. Data is always consistent at all times", "B. Reads always return the latest write", "C. Given no new updates, all replicas will converge to the same value", "D. Strong consistency is guaranteed"],
+    "answer": "C. Given no new updates, all replicas will converge to the same value",
+    "explanation": "Eventual consistency allows temporary inconsistencies but guarantees convergence."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Programming Paradigms",
+    "type": "MCQ",
+    "question": "Which of the following is a key idea of functional programming?",
+    "options": ["A. Global mutable state", "B. Pure functions without side effects", "C. Extensive use of goto", "D. Manual memory management only"],
+    "answer": "B. Pure functions without side effects",
+    "explanation": "Functional programming emphasizes immutability and pure functions."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Type Systems",
+    "type": "MCQ",
+    "question": "Static typing means that:",
+    "options": ["A. Types are checked at runtime", "B. Types are checked at compile time", "C. The language has no types", "D. Variables can hold any type anytime"],
+    "answer": "B. Types are checked at compile time",
+    "explanation": "Static languages detect many type errors before execution."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Type Systems",
+    "type": "MCQ",
+    "question": "Which is an advantage of strong static typing?",
+    "options": ["A. No compilation needed", "B. Detecting type errors early and better tooling", "C. Faster string concatenation only", "D. Unlimited dynamic behavior"],
+    "answer": "B. Detecting type errors early and better tooling",
+    "explanation": "Static types allow compilers and IDEs to catch inconsistencies early."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Numerical Issues",
+    "type": "MCQ",
+    "question": "Integer overflow occurs when:",
+    "options": ["A. A floating-point number is too small", "B. A value exceeds the range representable by the integer type", "C. Division by zero happens", "D. A string is too long"],
+    "answer": "B. A value exceeds the range representable by the integer type",
+    "explanation": "Overflow wraps or saturates depending on language/runtime."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "APIs & Abstraction",
+    "type": "MCQ",
+    "question": "A good API should be:",
+    "options": ["A. Inconsistent but short", "B. Stable, well-documented, and predictable", "C. Self-modifying", "D. Hidden from all callers"],
+    "answer": "B. Stable, well-documented, and predictable",
+    "explanation": "APIs are contracts; they must be clear, consistent, and stable."
+  },
+  {
+    "topic": "Core CS Fundamentals",
+    "sub_topic": "Compilation vs Interpretation",
+    "type": "MCQ",
+    "question": "Which statement is TRUE about compilation vs interpretation?",
+    "options": ["A. Compilers translate source code to machine code ahead of time", "B. Interpreters always produce native binaries", "C. Compilers execute code line by line at runtime", "D. Interpreters cannot be used for scripting"],
+    "answer": "A. Compilers translate source code to machine code ahead of time",
+    "explanation": "Interpreters generally execute code directly or via bytecode at runtime."
+  },
+    {
+    "topic": "General Technical",
+    "sub_topic": "Web Architecture",
+    "type": "MCQ",
+    "question": "Which of the following BEST describes a typical three-tier web architecture?",
+    "options": ["A. Client, Application server, Database", "B. Browser only", "C. DNS, CDN, Router", "D. CPU, Memory, Disk"],
+    "answer": "A. Client, Application server, Database",
+    "explanation": "Three-tier architecture separates presentation, application logic, and data storage."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Web Architecture",
+    "type": "MCQ",
+    "question": "In a RESTful API, resources are typically identified by:",
+    "options": ["A. File paths only", "B. URLs/URIs", "C. MAC addresses", "D. Port numbers"],
+    "answer": "B. URLs/URIs",
+    "explanation": "REST treats server data as resources addressed via URIs."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "REST",
+    "type": "MCQ",
+    "question": "Which HTTP method is generally used to create a new resource?",
+    "options": ["A. GET", "B. POST", "C. DELETE", "D. OPTIONS"],
+    "answer": "B. POST",
+    "explanation": "POST is commonly used to create subordinate resources on the server."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "REST",
+    "type": "MCQ",
+    "question": "Which statement about RESTful APIs is TRUE?",
+    "options": ["A. They must use XML only", "B. They must use SOAP", "C. They are stateless and use standard HTTP methods", "D. They require WebSockets"],
+    "answer": "C. They are stateless and use standard HTTP methods",
+    "explanation": "Statelessness and use of HTTP verbs like GET/POST/PUT/DELETE are core REST principles."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "GraphQL",
+    "type": "MCQ",
+    "question": "Which is a key advantage of GraphQL over REST?",
+    "options": ["A. Only supports XML", "B. Client can specify exactly what data it needs", "C. Requires fewer types", "D. Does not need a schema"],
+    "answer": "B. Client can specify exactly what data it needs",
+    "explanation": "GraphQL queries allow clients to shape the response, reducing over-fetching and under-fetching."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Microservices",
+    "type": "MCQ",
+    "question": "Which of the following is a characteristic of microservices architecture?",
+    "options": ["A. Single codebase and deployment", "B. Strong coupling between components", "C. Each service can be deployed independently", "D. All services share a single database schema"],
+    "answer": "C. Each service can be deployed independently",
+    "explanation": "Microservices emphasize independently deployable, loosely coupled services."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Microservices",
+    "type": "MCQ",
+    "question": "Which is a common challenge with microservices?",
+    "options": ["A. Lack of scalability", "B. Difficulty in independent deployments", "C. Distributed data consistency and observability", "D. No need for monitoring"],
+    "answer": "C. Distributed data consistency and observability",
+    "explanation": "Microservices increase complexity in data consistency, monitoring, and debugging."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Containers",
+    "type": "MCQ",
+    "question": "Which tool is most commonly associated with containerization?",
+    "options": ["A. Git", "B. Docker", "C. Jenkins", "D. Nginx"],
+    "answer": "B. Docker",
+    "explanation": "Docker is a popular platform for building and running containers."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Containers",
+    "type": "MCQ",
+    "question": "What is an advantage of containers compared to traditional VMs?",
+    "options": ["A. Containers require their own OS kernel per app", "B. Containers share the host kernel and are generally lighter weight", "C. Containers cannot be orchestrated", "D. Containers cannot be used in the cloud"],
+    "answer": "B. Containers share the host kernel and are generally lighter weight",
+    "explanation": "Containers package application and dependencies but reuse the host OS kernel."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Kubernetes",
+    "type": "MCQ",
+    "question": "Kubernetes is primarily used for:",
+    "options": ["A. Source control", "B. Container orchestration", "C. Logging only", "D. Building binaries"],
+    "answer": "B. Container orchestration",
+    "explanation": "Kubernetes manages deployment, scaling, and health of containerized applications."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "CI/CD",
+    "type": "MCQ",
+    "question": "Which BEST describes Continuous Integration (CI)?",
+    "options": ["A. Manually deploying code weekly", "B. Frequently merging code into a shared branch with automated tests", "C. Only running tests on production", "D. Writing code without version control"],
+    "answer": "B. Frequently merging code into a shared branch with automated tests",
+    "explanation": "CI encourages small, frequent integrations validated by automated checks."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "CI/CD",
+    "type": "MCQ",
+    "question": "Continuous Delivery (CD) focuses on:",
+    "options": ["A. Running tests locally", "B. Automating deployment so releases can be done at any time", "C. Writing documentation", "D. Branching strategies"],
+    "answer": "B. Automating deployment so releases can be done at any time",
+    "explanation": "CD keeps software in a deployable state through automation."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Version Control",
+    "type": "MCQ",
+    "question": "Which command in Git is typically used to upload local commits to a remote repository?",
+    "options": ["A. git pull", "B. git push", "C. git fetch", "D. git merge"],
+    "answer": "B. git push",
+    "explanation": "git push sends local commits to the remote repository."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Version Control",
+    "type": "MCQ",
+    "question": "What is the main purpose of a pull request (PR) or merge request?",
+    "options": ["A. To delete a branch", "B. To propose changes and enable code review before merging", "C. To create a new repository", "D. To revert commits"],
+    "answer": "B. To propose changes and enable code review before merging",
+    "explanation": "PRs facilitate collaboration and review before integration."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Testing",
+    "type": "MCQ",
+    "question": "Unit tests are primarily used to:",
+    "options": ["A. Test the entire system end-to-end", "B. Test individual functions or classes in isolation", "C. Load test production servers", "D. Monitor logs"],
+    "answer": "B. Test individual functions or classes in isolation",
+    "explanation": "Unit tests validate small units of behavior."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Testing",
+    "type": "MCQ",
+    "question": "End-to-end (E2E) tests typically:",
+    "options": ["A. Run only on small functions", "B. Simulate user workflows across the full system stack", "C. Validate individual methods only", "D. Replace all manual testing"],
+    "answer": "B. Simulate user workflows across the full system stack",
+    "explanation": "E2E tests exercise the system from the user's perspective."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Security",
+    "type": "MCQ",
+    "question": "Which vulnerability allows attackers to inject JavaScript into web pages viewed by other users?",
+    "options": ["A. SQL Injection", "B. Cross-Site Scripting (XSS)", "C. CSRF", "D. Directory Traversal"],
+    "answer": "B. Cross-Site Scripting (XSS)",
+    "explanation": "XSS occurs when untrusted input is rendered as executable script in the browser."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Security",
+    "type": "MCQ",
+    "question": "CSRF (Cross-Site Request Forgery) attacks rely on:",
+    "options": ["A. User entering SQL directly", "B. Browser automatically sending cookies to trusted sites", "C. DNS spoofing", "D. Man-in-the-middle encryption"],
+    "answer": "B. Browser automatically sending cookies to trusted sites",
+    "explanation": "CSRF uses authenticated browser context to perform unwanted actions."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Security",
+    "type": "MCQ",
+    "question": "SQL Injection vulnerabilities are best mitigated by:",
+    "options": ["A. Building queries via string concatenation", "B. Disabling authentication", "C. Using parameterized queries/prepared statements", "D. Only allowing admin users"],
+    "answer": "C. Using parameterized queries/prepared statements",
+    "explanation": "Parameterized queries ensure user input is treated as data, not executable SQL."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Auth",
+    "type": "MCQ",
+    "question": "Which statement about JWT (JSON Web Token) is TRUE?",
+    "options": ["A. JWTs are always encrypted", "B. JWTs are signed to ensure integrity", "C. JWTs cannot contain claims", "D. JWTs replace HTTPS"],
+    "answer": "B. JWTs are signed to ensure integrity",
+    "explanation": "JWTs are typically signed; encryption is optional and separate (JWE vs JWS)."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Auth",
+    "type": "MCQ",
+    "question": "OAuth 2.0 is primarily used to:",
+    "options": ["A. Sign JSON tokens", "B. Authorize third-party applications to access user resources", "C. Encrypt all HTTP traffic", "D. Replace passwords entirely"],
+    "answer": "B. Authorize third-party applications to access user resources",
+    "explanation": "OAuth 2.0 provides delegated authorization."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Cloud",
+    "type": "MCQ",
+    "question": "Which cloud service model provides virtual machines, storage, and networks?",
+    "options": ["A. IaaS", "B. PaaS", "C. SaaS", "D. FaaS"],
+    "answer": "A. IaaS",
+    "explanation": "Infrastructure as a Service exposes compute, storage, and networking primitives."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Cloud",
+    "type": "MCQ",
+    "question": "In SaaS (Software as a Service), the provider is responsible for:",
+    "options": ["A. Only hardware", "B. Hardware, OS, platform, and application", "C. Only the OS", "D. Only the application code"],
+    "answer": "B. Hardware, OS, platform, and application",
+    "explanation": "SaaS delivers the full application stack to end users."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Caching",
+    "type": "MCQ",
+    "question": "Which is a common risk when using caches?",
+    "options": ["A. Higher latency", "B. Cache invalidation and stale data", "C. Lower throughput", "D. Increased CPU usage only"],
+    "answer": "B. Cache invalidation and stale data",
+    "explanation": "Keeping cached data consistent with the source of truth is challenging."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Caching",
+    "type": "MCQ",
+    "question": "Which cache eviction policy removes the item that has not been used for the longest time?",
+    "options": ["A. FIFO", "B. LRU", "C. MRU", "D. Random"],
+    "answer": "B. LRU",
+    "explanation": "Least Recently Used evicts entries not accessed recently."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Messaging",
+    "type": "MCQ",
+    "question": "A message queue (e.g., RabbitMQ) is MOST useful for:",
+    "options": ["A. Tight coupling between services", "B. Asynchronous communication and decoupling producers and consumers", "C. Storing relational data", "D. DNS resolution"],
+    "answer": "B. Asynchronous communication and decoupling producers and consumers",
+    "explanation": "Queues buffer messages and allow services to communicate asynchronously."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Event-Driven",
+    "type": "MCQ",
+    "question": "In an event-driven architecture, services primarily communicate by:",
+    "options": ["A. Direct synchronous HTTP calls only", "B. Shared database tables", "C. Publishing and subscribing to events", "D. Manual file transfers"],
+    "answer": "C. Publishing and subscribing to events",
+    "explanation": "Publish–subscribe patterns decouple producers and consumers via events."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Observability",
+    "type": "MCQ",
+    "question": "Which three pillars are commonly associated with observability?",
+    "options": ["A. Logs, metrics, traces", "B. CPU, RAM, disk", "C. Build, test, deploy", "D. HTTP, TCP, UDP"],
+    "answer": "A. Logs, metrics, traces",
+    "explanation": "These three data types help understand system behavior."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Monitoring",
+    "type": "MCQ",
+    "question": "A service-level objective (SLO) typically defines:",
+    "options": ["A. Internal code style rules", "B. A measurable target for a reliability metric like uptime", "C. Developer on-call schedules", "D. Repository structure"],
+    "answer": "B. A measurable target for a reliability metric like uptime",
+    "explanation": "SLOs define target levels of service as part of SRE practices."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "DevOps",
+    "type": "MCQ",
+    "question": "Which statement aligns BEST with DevOps culture?",
+    "options": ["A. Developers and operations work in isolation", "B. Frequent small releases with shared responsibility", "C. No automation is necessary", "D. Only operations handle production issues"],
+    "answer": "B. Frequent small releases with shared responsibility",
+    "explanation": "DevOps emphasizes collaboration, automation, and continuous delivery."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Agile",
+    "type": "MCQ",
+    "question": "In Agile development, a 'sprint' is:",
+    "options": ["A. A static architecture diagram", "B. A short, time-boxed period to deliver increments of value", "C. A large yearly release", "D. A type of bug"],
+    "answer": "B. A short, time-boxed period to deliver increments of value",
+    "explanation": "Sprints are fixed-length iterations used in Scrum."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Design Patterns",
+    "type": "MCQ",
+    "question": "The MVC pattern separates:",
+    "options": ["A. Database, network, filesystem", "B. Model, View, Controller", "C. CPU, Memory, Disk", "D. HTML, CSS, JavaScript"],
+    "answer": "B. Model, View, Controller",
+    "explanation": "MVC separates data, UI, and control logic."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Design Patterns",
+    "type": "MCQ",
+    "question": "In a layered architecture, the presentation layer should ideally:",
+    "options": ["A. Directly manipulate the database", "B. Call the data layer through an application/service layer", "C. Know nothing about the application layer", "D. Be combined with the database"],
+    "answer": "B. Call the data layer through an application/service layer",
+    "explanation": "Layering promotes separation of concerns and reduces coupling."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "APIs",
+    "type": "MCQ",
+    "question": "API versioning is important because:",
+    "options": ["A. It speeds up SQL queries", "B. It allows changes without breaking existing clients", "C. It reduces disk space", "D. It is required by HTTP"],
+    "answer": "B. It allows changes without breaking existing clients",
+    "explanation": "Versioning lets you evolve APIs while supporting older consumers."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Performance",
+    "type": "MCQ",
+    "question": "Which tool category is used to simulate many users hitting an application to measure performance?",
+    "options": ["A. Static analyzer", "B. Load testing tool", "C. Linter", "D. Code formatter"],
+    "answer": "B. Load testing tool",
+    "explanation": "Load tests measure throughput, latency, and system behavior under stress."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Performance",
+    "type": "MCQ",
+    "question": "Vertical scaling usually means:",
+    "options": ["A. Adding more servers", "B. Adding more CPU/RAM to an existing server", "C. Adding more regions", "D. Adding more developers"],
+    "answer": "B. Adding more CPU/RAM to an existing server",
+    "explanation": "Vertical scaling increases resources of a single node; horizontal scaling adds nodes."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Logging",
+    "type": "MCQ",
+    "question": "Structured logging means:",
+    "options": ["A. Logging plain text only", "B. Logging in a consistent machine-readable format like JSON", "C. Logging only in production", "D. Logging only errors"],
+    "answer": "B. Logging in a consistent machine-readable format like JSON",
+    "explanation": "Structured logs improve search and analysis in log aggregation tools."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Error Handling",
+    "type": "MCQ",
+    "question": "A good error message should:",
+    "options": ["A. Reveal internal secrets", "B. Be vague and generic only", "C. Clearly describe the problem and how to fix it without exposing sensitive details", "D. Crash the system"],
+    "answer": "C. Clearly describe the problem and how to fix it without exposing sensitive details",
+    "explanation": "Useful error messages aid debugging while maintaining security."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Configuration",
+    "type": "MCQ",
+    "question": "Why are environment variables preferred over hardcoding secrets in code?",
+    "options": ["A. They are faster at runtime", "B. They make secrets easier to commit to Git", "C. They separate configuration from code and reduce secret leakage risk", "D. They prevent configuration changes"],
+    "answer": "C. They separate configuration from code and reduce secret leakage risk",
+    "explanation": "Secrets in code are hard to rotate and easy to leak; env vars centralize configuration."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "NoSQL",
+    "type": "MCQ",
+    "question": "A document store like MongoDB is BEST suited for:",
+    "options": ["A. Strictly normalized relational data", "B. Highly structured tabular data only", "C. Semi-structured JSON-like documents", "D. Binary-only blobs"],
+    "answer": "C. Semi-structured JSON-like documents",
+    "explanation": "Document databases store flexible, schema-lite documents."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Reliability",
+    "type": "MCQ",
+    "question": "Which practice helps systems remain available during deployments?",
+    "options": ["A. Deploying by stopping all servers, then updating", "B. Blue–green or rolling deployments", "C. Deploying only at midnight", "D. Ignoring monitoring alerts"],
+    "answer": "B. Blue–green or rolling deployments",
+    "explanation": "These techniques allow updates with minimal downtime."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Bug Handling",
+    "type": "MCQ",
+    "question": "The FIRST step when debugging a production issue should usually be:",
+    "options": ["A. Immediately refactor code", "B. Roll back recent changes or gather logs and metrics to understand impact", "C. Add random print statements", "D. Reboot all servers"],
+    "answer": "B. Roll back recent changes or gather logs and metrics to understand impact",
+    "explanation": "Understanding scope and impact is critical before making large changes."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Agile Practices",
+    "type": "MCQ",
+    "question": "A 'retrospective' meeting in Agile is used to:",
+    "options": ["A. Plan product roadmap", "B. Evaluate what went well and what can be improved in the last iteration", "C. Review finances", "D. Hire new team members"],
+    "answer": "B. Evaluate what went well and what can be improved in the last iteration",
+    "explanation": "Retrospectives focus on continuous process improvement."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Documentation",
+    "type": "MCQ",
+    "question": "Good technical documentation should be:",
+    "options": ["A. Out-of-date but long", "B. Accurate, concise, and easy to navigate", "C. Written only after release", "D. Only in comments"],
+    "answer": "B. Accurate, concise, and easy to navigate",
+    "explanation": "Effective docs help others understand and use systems correctly."
+  },
+  {
+    "topic": "General Technical",
+    "sub_topic": "Soft Skills",
+    "type": "MCQ",
+    "question": "In code reviews, the primary goal should be to:",
+    "options": ["A. Find as many minor stylistic issues as possible", "B. Attack the author personally", "C. Improve code quality and share knowledge collaboratively", "D. Block all changes"],
+    "answer": "C. Improve code quality and share knowledge collaboratively",
+    "explanation": "Code reviews are about quality, learning, and collaboration, not blame."
+  }
+]

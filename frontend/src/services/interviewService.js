@@ -341,7 +341,114 @@ class InterviewService {
       return handleApiError(error);
     }
   }
+
+  // ----- Interview V2 (MCQ + video) helpers -----
+
+  /**
+   * Start a new InterviewV2 session (MCQ + video based) using a backend config.
+   * @param {Object} payload
+   * @param {string} payload.configId - InterviewConfigV2 ID
+   * @param {{given:boolean, at?:string}} payload.consent - Consent info
+   */
+  async startInterviewV2(payload) {
+    try {
+      const response = await api.post('/interviews-v2', payload);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
+   * Get InterviewV2 session details.
+   * @param {string} interviewId
+   */
+  async getInterviewSessionV2(interviewId) {
+    try {
+      const response = await api.get(`/interviews-v2/${interviewId}`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
+   * Submit or update a response for an InterviewV2 question.
+   * Handles both MCQ and VIDEO types.
+   * @param {string} interviewId
+   * @param {Object} body
+   */
+  async submitResponseV2(interviewId, body) {
+    try {
+      const response = await api.post(`/interviews-v2/${interviewId}/responses`, body);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
+   * Complete an InterviewV2 session and get MCQ summary (video analysis is async).
+   * @param {string} interviewId
+   */
+  async completeInterviewV2(interviewId) {
+    try {
+      const response = await api.post(`/interviews-v2/${interviewId}/complete`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
+   * Get the final InterviewV2 report (MCQ + video anomaly + recommendation).
+   * @param {string} interviewId
+   */
+  async getInterviewReportV2(interviewId) {
+    try {
+      const response = await api.get(`/interviews-v2/${interviewId}/report`);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
+   * Upload a recorded interview video (base64) and attach it to InterviewV2 response.
+   * @param {Object} payload
+   * @param {string} payload.interviewId
+   * @param {string} payload.questionId
+   * @param {string} payload.videoB64 - Base64 encoded video blob (without data URL prefix)
+   * @param {number} payload.durationSec
+   */
+  async uploadInterviewVideoV2(payload) {
+    try {
+      const response = await api.post('/upload/interview-video', payload);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  /**
+   * Upload a single overall interview video for the entire InterviewV2 session.
+   * This is used when the webcam is recording throughout the MCQ test.
+   * @param {Object} payload
+   * @param {string} payload.interviewId
+   * @param {string} payload.videoB64
+   * @param {number} payload.durationSec
+   */
+  async uploadOverallInterviewVideoV2(payload) {
+    try {
+      const response = await api.post('/upload/interview-overall-video', payload);
+      return handleApiResponse(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
 }
 
-// Export singleton instance
+/**
+ * Export singleton instance
+ */
 export default new InterviewService();

@@ -4,6 +4,7 @@ from typing import Optional, List, Dict, Any
 import base64
 import time
 import json
+import random
 try:
     # When running as a package: uvicorn ml_service.main:app
     from .questions import pick_questions
@@ -33,6 +34,33 @@ class FERRequest(BaseModel):
 class FERResponse(BaseModel):
     eye_contact: Optional[float] = None
     emotions: Optional[dict] = None
+
+
+class VideoAnomalyRequest(BaseModel):
+    """Request model for video anomaly analysis.
+
+    For now we only need identifiers and a path to the stored video file.
+    The current implementation ignores the content and returns stubbed values
+    so the rest of the pipeline can be validated.
+    """
+
+    interview_id: str
+    question_id: str
+    video_path: str
+
+
+class VideoAnomalyFlags(BaseModel):
+    multiFace: bool = False
+    deepfakeRisk: bool = False
+    livenessIssues: bool = False
+    lowQuality: bool = False
+    lipSyncIssues: bool = False
+
+
+class VideoAnomalyResponse(BaseModel):
+    anomalyScore: float
+    flags: VideoAnomalyFlags
+    summary: str = ""
 
 @app.get("/health")
 def health():
@@ -333,6 +361,60 @@ def finish_interview(req: FinishInterviewRequest):
         strengths=strengths,
         improvements=improvements,
     )
+
+
+@app.post("/video_anomaly", response_model=VideoAnomalyResponse)
+def video_anomaly(req: VideoAnomalyRequest):
+    """Stubbed video anomaly endpoint for InterviewV2.
+
+    The current implementation does NOT run any heavy ML. It simply
+    returns deterministic pseudo-random scores and flags derived from
+    the interview/question identifiers, so the Node.js backend and
+    frontend can be wired and tested end-to-end.
+    """
+
+    # Derive a pseudo-random but stable seed from the IDs so that the
+    # same video yields the same result across calls.
+    seed_str = f"{req.interview_id}:{req.question_id}"
+    seed = abs(hash(seed_str)) % (10**8)
+    rnd = random.Random(seed)
+
+    # Overall anomaly score between 0 and 100
+    score = round(rnd.uniform(0, 100), 1)
+
+    # Generate flags based on score bands
+    flags = VideoAnomalyFlags(
+        multiFace=score > 60,
+        deepfakeRisk=score > 75,
+        livenessIssues=score > 50,
+        lowQuality=score > 40,
+        lipSyncIssues=score > 55,
+    )
+
+    problems = [
+        name for name, active in [
+            ("multiple faces detected (possible collaboration)", flags.multiFace),
+            ("potential deepfake / spoofing artifacts", flags.deepfakeRisk),
+            ("low liveness / limited natural movement", flags.livenessIssues),
+            ("low video quality (blur/lighting issues)", flags.lowQuality),
+            ("lip-sync inconsistencies or off-camera speaking", flags.lipSyncIssues),
+        ]
+        if active
+    ]
+
+    if not problems:
+        summary = (
+            "No significant anomalies detected. Eye contact and movement appear consistent with a focused, "
+            "single-attendee session."
+        )
+    else:
+        summary = (
+            "Anomaly indicators related to attention and authenticity: "
+            + "; ".join(problems)
+            + "."
+        )
+
+    return VideoAnomalyResponse(anomalyScore=score, flags=flags, summary=summary)
 
 @app.post("/asr", response_model=ASRResponse)
 def asr(req: ASRRequest):

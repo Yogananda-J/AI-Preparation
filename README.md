@@ -1,6 +1,11 @@
-# AI_PREP
+# UpSkill
 
-A monorepo for an AI coding interview and practice platform. It includes a React (Vite) frontend and an Express/MongoDB backend, with optional local code execution (ACE) and Judge0 support.
+UpSkill is a monorepo for a modern coding interview and practice platform. It includes:
+
+- A React (Vite) frontend
+- An Express/MongoDB backend
+- An optional Python FastAPI ML service for proctored interviews (overall webcam recording + anomaly analysis)
+- Optional local code execution (ACE) and Judge0 integration for running code challenges
 
 ## Tech Stack
 
@@ -278,7 +283,12 @@ Judge0 is an alternative code execution service. You can use either ACE or Judge
 
 #### ML Service (Interview AI Features)
 
-The ML service provides AI-powered interview features including question generation, speech recognition (ASR), and facial expression recognition (FER).
+The ML service provides AI-powered interview features. In the current UpSkill implementation it is primarily used for:
+
+- Health checking the ML stack
+- Stubbed video anomaly analysis for InterviewV2 (overall webcam recording)
+
+Legacy endpoints for full ML-driven interviews (start_interview/next_question/finish_interview, WebSocket metrics, ASR/FER) still exist but are not used by the current InterviewV2 flow.
 
 **Prerequisites:**
 - Python 3.9+
@@ -306,28 +316,30 @@ ML_BASE_URL=http://localhost:8001
 ML_SERVICE_URL=http://localhost:8001
 ```
 
-**ML Service Features:**
-- Interview session management
-- Question generation based on role and topics
-- Answer evaluation (MCQ and behavioral questions)
-- Delivery metrics tracking (WPM, filler words, eye contact)
-- Final interview scoring and feedback
+**ML Service Features (legacy + current):**
+- Stubbed `/video_anomaly` endpoint used by InterviewV2 overall video upload:
+  - Accepts `{ interview_id, question_id, video_path }`
+  - Returns `{ anomalyScore, flags, summary }` where flags include multiFace/deepfakeRisk/livenessIssues/lowQuality/lipSyncIssues
+  - Currently implemented as a deterministic stub (no heavy ML yet) so the full pipeline can be exercised end-to-end
+- Legacy interview session management:
+  - Question generation based on role and topics
+  - Answer evaluation (MCQ and behavioral questions)
+  - Delivery metrics tracking (WPM, filler words, eye contact)
+  - Final interview scoring and feedback
 
 **Testing ML Service:**
+
 ```bash
 # Health check
 curl http://localhost:8001/health
 
-# Start interview session
-curl -X POST http://localhost:8001/start_interview \
+# Stubbed full-session video anomaly analysis
+curl -X POST http://localhost:8001/video_anomaly \
   -H "Content-Type: application/json" \
   -d '{
-    "session_id": "test-123",
-    "role": "Software Engineer",
-    "duration": 45,
-    "topics": [],
-    "experience": "Junior",
-    "num_questions": 5
+    "interview_id": "example-id",
+    "question_id": "overall",
+    "video_path": "/path/to/uploaded/video.webm"
   }'
 ```
 
@@ -369,20 +381,39 @@ npm run seed:demo
 ### Leaderboard
 - `GET /api/leaderboard` - Get user rankings and scores
 
-### Interviews
-- `POST /api/interviews/start` - Start new interview session
-  - Body: `{ type?, difficulty?, duration?, topics?, role, experience, questionCount?, resumeName?, resumeB64? }`
-  - Returns: `{ success, data: { id, startedAt, config, questions, questionCount } }`
-- `GET /api/interviews/:id` - Get interview session by ID
+### Interviews (legacy v1)
+- `POST /api/interviews/start` - Start legacy interview session (coding/behavioral)
+- `GET /api/interviews/:id` - Get legacy interview session by ID
 - `POST /api/interviews/answer` - Submit answer for current question
-  - Body: `{ sessionId, questionId, answer?, code?, timeSpent?, mcqAnswer? }`
 - `GET /api/interviews/next/:sessionId` - Get next question in session
-- `POST /api/interviews/complete/:id` - Complete interview and get final report
-  - Returns: `{ success, data: { score, time, grade, report } }`
+- `POST /api/interviews/complete/:id` - Complete legacy interview and get report
 - `GET /api/interviews/feedback/:id` - Get AI feedback for interview
 - **WebSocket**: `ws://localhost:<PORT>/api/interviews/stream?sessionId=...`
-  - Messages: `{ type: 'audio'|'video'|'control', payload: base64, ts }`
-  - Responses: `{ type: 'transcript'|'metrics'|'prompt', ... }`
+
+### Interviews V2 (current flow)
+
+The current production-like flow uses InterviewV2, a structured MCQ-only technical assessment with continuous webcam recording and overall video anomaly analysis.
+
+- `POST /api/interviews-v2` – Create a new InterviewV2 session
+  - Body: `{ configId?, consent: { given: boolean, at?: string }, numQuestions?, difficulty? }`
+  - Returns: `{ success, data: { id, status, startedAt, config, questions, mcqCount, videoCount } }`
+- `GET /api/interviews-v2/:id` – Get InterviewV2 session and questions
+- `POST /api/interviews-v2/:id/responses` – Upsert response for a question (MCQ)
+  - Body: `{ questionId, index, type: 'MCQ', mcqSelectedOption, timeTakenSec }`
+- `POST /api/interviews-v2/:id/complete` – Finalize interview, compute MCQ score and attach any existing anomaly metrics
+- `GET /api/interviews-v2/:id/report` – Get final report including:
+  - MCQ accuracy and per-question breakdown
+  - Overall video anomaly score (0–100)
+  - Video anomaly flags (multiFace, deepfakeRisk, livenessIssues, lowQuality, lipSyncIssues)
+  - Audio-visual summary text
+- `POST /api/upload/interview-overall-video` – Upload a single full-session webcam recording (base64) for anomaly analysis
+
+On the frontend, the InterviewV2 page:
+
+- Runs a consent + hardware (camera/mic) check
+- Records webcam continuously for the entire MCQ session
+- Stops recording and uploads the video once at the end
+- Displays MCQ performance and video anomaly summary in the final report screen
 
 ### ML Service Endpoints (port 8001)
 - `GET /health` - Health check

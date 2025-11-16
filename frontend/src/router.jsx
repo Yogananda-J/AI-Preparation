@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import Challenge from './pages/Challenge';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
-import Interview from './pages/Interview';
+import InterviewV2 from './pages/InterviewV2';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import RequireAuth from './components/RequireAuth';
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
         path: 'interview',
         element: (
           <RequireAuth>
-            <Interview />
+            <InterviewV2 />
           </RequireAuth>
         ),
       },

@@ -7,7 +7,8 @@ import authRoutes from './routes/auth.routes.js';
 import challengeRoutes from './routes/challenge.routes.js';
 import leaderboardRoutes from './routes/leaderboard.routes.js';
 import profileRoutes from './routes/profile.routes.js';
-import interviewRoutes from './routes/interview.routes.js';
+import interviewV2Routes from './routes/interviewV2.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 const app = express();
 
@@ -32,7 +33,8 @@ app.use(
     optionsSuccessStatus: 200,
   })
 );
-app.use(express.json({ limit: '1mb' }));
+// Allow larger JSON payloads so base64-encoded interview videos can be uploaded
+app.use(express.json({ limit: '50mb' }));
 app.use(morgan('dev'));
 
 app.get(env.API_PREFIX + '/health', (req, res) => {
@@ -43,7 +45,8 @@ app.use(env.API_PREFIX + '/auth', authRoutes);
 app.use(env.API_PREFIX + '/challenges', challengeRoutes);
 app.use(env.API_PREFIX + '/leaderboard', leaderboardRoutes);
 app.use(env.API_PREFIX + '/profile', profileRoutes);
-app.use(env.API_PREFIX + '/interviews', interviewRoutes);
+app.use(env.API_PREFIX + '/interviews-v2', interviewV2Routes);
+app.use(env.API_PREFIX + '/upload', uploadRoutes);
 
 // 404 handler
 app.use((req, res) => {
