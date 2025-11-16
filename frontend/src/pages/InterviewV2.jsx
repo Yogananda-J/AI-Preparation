@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Play, Video, Mic, Clock } from 'lucide-react';
+import { Play, Video, Mic, Clock, CheckCircle2, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import interviewService from '../services/interviewService';
 
 const InterviewV2 = () => {
-  const [stage, setStage] = useState('welcome'); // welcome | hardware | active | completed
+  const [stage, setStage] = useState('welcome'); // welcome | hardware | active | review | completed
   const [consentGiven, setConsentGiven] = useState(false);
   const [checkingCam, setCheckingCam] = useState(false);
   const [checkingMic, setCheckingMic] = useState(false);
@@ -23,12 +23,14 @@ const InterviewV2 = () => {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [mcqSelection, setMcqSelection] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [answersByIndex, setAnswersByIndex] = useState({}); // { [index]: mcqSelectedOption }
 
   const [videoRecording, setVideoRecording] = useState(false);
   const recorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
   const questionStartRef = useRef(null);
   const overallStartRef = useRef(null);
+  const [overallTimeLeft, setOverallTimeLeft] = useState(0);
 
   // Configurable options before starting the interview
   const [numQuestions, setNumQuestions] = useState(20); // user choice, clamped 20-25 on backend
@@ -37,6 +39,17 @@ const InterviewV2 = () => {
   // Results / report after completion
   const [resultSummary, setResultSummary] = useState(null);
   const [report, setReport] = useState(null);
+
+  const formatSeconds = (totalSec) => {
+    const sec = Math.max(0, Number(totalSec) || 0);
+    const m = Math.floor(sec / 60)
+      .toString()
+      .padStart(2, '0');
+    const s = (sec % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   useEffect(() => {
     if (!activeQuestion) return;
@@ -64,6 +77,17 @@ const InterviewV2 = () => {
     }, 1000);
     return () => clearInterval(id);
   }, [timeLeft, activeQuestion, stage]);
+
+  // Overall interview timer (continues during review)
+  useEffect(() => {
+    if (!session) return;
+    if (stage === 'completed') return;
+    if (overallTimeLeft <= 0) return;
+    const id = setInterval(() => {
+      setOverallTimeLeft((t) => (t > 0 ? t - 1 : 0));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [session, stage, overallTimeLeft]);
 
   const stopMedia = () => {
     try { if (rafRef.current) cancelAnimationFrame(rafRef.current); } catch (_) {}
@@ -134,59 +158,123 @@ const InterviewV2 = () => {
       return;
     }
     setSession(res.data);
-    setQuestions(res.data.questions || []);
-    if (Array.isArray(res.data.questions) && res.data.questions.length) {
+    const qs = res.data.questions || [];
+    setQuestions(qs);
+    if (Array.isArray(qs) && qs.length) {
       setCurrentIdx(0);
-      setActiveQuestion(res.data.questions[0]);
+      setActiveQuestion(qs[0]);
+      // Fixed 30-minute overall timer for both 20 and 25-question interviews
+      setOverallTimeLeft(30 * 60);
       setStage('active');
       // Start continuous recording for the whole interview session
       startOverallRecording();
     }
   };
 
+  const saveCurrentAnswer = async (requireAnswer) => {
+    if (!session || !activeQuestion) return false;
+    const now = Date.now();
+    const timeTakenSec = questionStartRef.current ? Math.round((now - questionStartRef.current) / 1000) : 0;
+
+    if (activeQuestion.type === 'MCQ') {
+      if (!mcqSelection) {
+        // No selection made; allow navigation without saving any answer
+        return true;
+      }
+      const body = {
+        questionId: activeQuestion.id,
+        index: currentIdx,
+        type: 'MCQ',
+        mcqSelectedOption: mcqSelection,
+        timeTakenSec,
+      };
+      const res = await interviewService.submitResponseV2(session.id, body);
+      if (!res.success) {
+        alert(res.error || 'Failed to save answer');
+        return false;
+      }
+      setAnswersByIndex((prev) => ({ ...prev, [currentIdx]: mcqSelection }));
+    }
+    // VIDEO submission is handled separately via overall recording upload
+    return true;
+  };
+
   const handleNext = async () => {
     if (!session || !activeQuestion) return;
     setIsSubmitting(true);
     try {
-      const now = Date.now();
-      const timeTakenSec = questionStartRef.current ? Math.round((now - questionStartRef.current) / 1000) : 0;
-      if (activeQuestion.type === 'MCQ') {
-        if (!mcqSelection) {
-          alert('Please select an option.');
-          setIsSubmitting(false);
-          return;
-        }
-        await interviewService.submitResponseV2(session.id, {
-          questionId: activeQuestion.id,
-          index: currentIdx,
-          type: 'MCQ',
-          mcqSelectedOption: mcqSelection,
-          timeTakenSec,
-        });
-        setMcqSelection('');
-      }
-      // VIDEO submission handled on stopRecording
+      const ok = await saveCurrentAnswer(true);
+      if (!ok) return;
       const nextIdx = currentIdx + 1;
       if (nextIdx < questions.length) {
         setCurrentIdx(nextIdx);
         setActiveQuestion(questions[nextIdx]);
+        const nextSaved = answersByIndex[nextIdx];
+        setMcqSelection(nextSaved || '');
       } else {
-        // Last question: stop continuous recording, upload once, then complete interview
-        // eslint-disable-next-line no-console
-        console.log('[InterviewV2] Last question reached, stopping overall recording & uploading...');
-        await stopOverallRecordingAndUpload();
-        const done = await interviewService.completeInterviewV2(session.id);
-        if (done.success) {
-          setResultSummary(done.data);
-          // Try to fetch the richer report including anomaly info
-          const rep = await interviewService.getInterviewReportV2(session.id);
-          if (rep.success) {
-            setReport(rep.data);
-          }
-          setStage('completed');
-        } else {
-          alert(done.error || 'Failed to complete interview');
+        // Move to review screen instead of completing immediately
+        setStage('review');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePrevious = async () => {
+    if (!session || !activeQuestion) return;
+    if (currentIdx === 0) return;
+    setIsSubmitting(true);
+    try {
+      const ok = await saveCurrentAnswer(false);
+      if (!ok) return;
+      const prevIdx = currentIdx - 1;
+      setCurrentIdx(prevIdx);
+      setActiveQuestion(questions[prevIdx]);
+      const prevSaved = answersByIndex[prevIdx];
+      setMcqSelection(prevSaved || '');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const goToQuestionIndex = async (idx) => {
+    if (!Array.isArray(questions) || idx < 0 || idx >= questions.length) return;
+    if (stage === 'active') {
+      const ok = await saveCurrentAnswer(false);
+      if (!ok) return;
+    }
+    setCurrentIdx(idx);
+    setActiveQuestion(questions[idx]);
+    const saved = answersByIndex[idx];
+    setMcqSelection(saved || '');
+    setStage('active');
+  };
+
+  const goToQuestionFromReview = (idx) => {
+    goToQuestionIndex(idx);
+  };
+
+  const handleFinalSubmitFromReview = async () => {
+    if (!session) return;
+    setIsSubmitting(true);
+    try {
+      // Ensure current answer (if any) is persisted without forcing selection
+      await saveCurrentAnswer(false);
+      // Stop continuous recording, upload once, then complete interview
+      // eslint-disable-next-line no-console
+      console.log('[InterviewV2] Final submission triggered from review, stopping overall recording & uploading...');
+      await stopOverallRecordingAndUpload();
+      const done = await interviewService.completeInterviewV2(session.id);
+      if (done.success) {
+        setResultSummary(done.data);
+        const rep = await interviewService.getInterviewReportV2(session.id);
+        if (rep.success) {
+          setReport(rep.data);
         }
+        stopMedia();
+        setStage('completed');
+      } else {
+        alert(done.error || 'Failed to complete interview');
       }
     } finally {
       setIsSubmitting(false);
@@ -399,7 +487,7 @@ const InterviewV2 = () => {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-gray-600" />
-                <span className="font-medium text-gray-900">Time left: {timeLeft}s</span>
+                <span className="font-medium text-gray-900">Interview time left: {formatSeconds(overallTimeLeft)}</span>
               </div>
               <span className="text-sm text-gray-600">
                 Question {currentIdx + 1} / {questions.length}
@@ -416,6 +504,58 @@ const InterviewV2 = () => {
                   Camera ready for proctoring
                 </span>
               )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-3 mb-6">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => goToQuestionIndex(currentIdx - 1)}
+                disabled={currentIdx === 0}
+                className={`inline-flex items-center justify-center h-8 w-8 rounded-md border text-xs font-medium ${
+                  currentIdx === 0
+                    ? 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="flex-1 flex items-center justify-center gap-1 overflow-x-auto">
+                {questions.map((q, idx) => {
+                  const isCurrent = idx === currentIdx;
+                  const saved = answersByIndex[idx];
+                  const isAnswered = q.type === 'MCQ' ? !!saved : false;
+                  return (
+                    <button
+                      key={q.id || idx}
+                      type="button"
+                      onClick={() => goToQuestionIndex(idx)}
+                      className={`h-8 min-w-[2rem] px-2 rounded-md text-xs font-medium border transition-colors ${
+                        isCurrent
+                          ? 'bg-sky-600 text-white border-sky-600'
+                          : isAnswered
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => goToQuestionIndex(currentIdx + 1)}
+                disabled={currentIdx === questions.length - 1}
+                className={`inline-flex items-center justify-center h-8 w-8 rounded-md border text-xs font-medium ${
+                  currentIdx === questions.length - 1
+                    ? 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -449,13 +589,25 @@ const InterviewV2 = () => {
                         </label>
                       ))}
                     </div>
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex justify-between items-center">
+                      <button
+                        type="button"
+                        onClick={handlePrevious}
+                        disabled={isSubmitting || currentIdx === 0}
+                        className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium border ${
+                          currentIdx === 0 || isSubmitting
+                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Previous
+                      </button>
                       <button
                         onClick={handleNext}
                         disabled={isSubmitting}
                         className="inline-flex items-center px-4 py-2 rounded-md bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium"
                       >
-                        {currentIdx < questions.length - 1 ? 'Next question' : 'Finish interview'}
+                        {currentIdx < questions.length - 1 ? 'Next question' : 'Review & submit'}
                       </button>
                     </div>
                   </div>
@@ -480,13 +632,25 @@ const InterviewV2 = () => {
                         Recording status: {videoRecording ? 'Recording...' : 'Idle'}
                       </span>
                     </div>
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex justify-between items-center">
+                      <button
+                        type="button"
+                        onClick={handlePrevious}
+                        disabled={isSubmitting || currentIdx === 0}
+                        className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium border ${
+                          currentIdx === 0 || isSubmitting
+                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Previous
+                      </button>
                       <button
                         onClick={handleNext}
                         disabled={isSubmitting}
                         className="inline-flex items-center px-4 py-2 rounded-md bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium"
                       >
-                        {currentIdx < questions.length - 1 ? 'Next question' : 'Finish interview'}
+                        {currentIdx < questions.length - 1 ? 'Next question' : 'Review & submit'}
                       </button>
                     </div>
                   </div>
@@ -517,6 +681,87 @@ const InterviewV2 = () => {
     );
   }
 
+  if (stage === 'review') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Review your answers</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Interview time left: {formatSeconds(overallTimeLeft)}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Question overview</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {questions.map((q, idx) => {
+                const saved = answersByIndex[idx];
+                const isMcq = q.type === 'MCQ';
+                // VIDEO questions are treated as unanswered until we explicitly mark them later
+                const isAnswered = isMcq ? !!saved : false;
+                const timeLabel = `${q.timerSec || 60}s`;
+                return (
+                  <button
+                    key={q.id || idx}
+                    type="button"
+                    onClick={() => goToQuestionFromReview(idx)}
+                    className="flex flex-col items-start px-3 py-2 rounded-md border text-sm hover:bg-gray-50"
+                  >
+                    <div className="flex items-center justify-between w-full mb-1">
+                      <span className="font-medium">Q{idx + 1}</span>
+                      {isAnswered ? (
+                        <span className="inline-flex items-center text-emerald-600 text-xs font-medium">
+                          <CheckCircle2 className="h-4 w-4 mr-1" /> Answered
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-amber-500 text-xs font-medium">
+                          <HelpCircle className="h-4 w-4 mr-1" /> Unanswered
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between w-full text-[11px] text-gray-500">
+                      <span>{q.type === 'MCQ' ? 'MCQ' : 'Video'}</span>
+                      <span>Time: {timeLabel}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Click on any question number to return to that question and change your answer.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => {
+                // Return to the first unanswered question if any, otherwise the first question
+                const firstUnansweredIdx = questions.findIndex((q, idx) => q.type === 'MCQ' && !answersByIndex[idx]);
+                const targetIdx = firstUnansweredIdx >= 0 ? firstUnansweredIdx : 0;
+                goToQuestionFromReview(targetIdx);
+              }}
+              className="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Return to questions
+            </button>
+            <button
+              type="button"
+              onClick={handleFinalSubmitFromReview}
+              disabled={isSubmitting}
+              className="inline-flex items-center px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium"
+            >
+              Final submission
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (stage === 'completed') {
     const mcq = report?.mcq;
     const interview = report?.interview;
@@ -531,17 +776,26 @@ const InterviewV2 = () => {
       <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
         <div className="max-w-5xl w-full bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-xl">
           <h2 className="text-2xl font-semibold text-white mb-4 text-center">Interview summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="bg-gray-950 border border-gray-800 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-gray-200 mb-2">MCQ performance</h3>
               {mcqScore != null ? (
                 <>
                   <p className="text-3xl font-bold text-sky-400 mb-1">{mcqScore}%</p>
                   {mcqCorrect != null && mcqTotal != null && (
-                    <p className="text-sm text-gray-300 mb-1">
+                    <p className="text-sm text-gray-300 mb-2">
                       {mcqCorrect} / {mcqTotal} questions correct
                     </p>
                   )}
+                  <div className="mt-2">
+                    <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-2 bg-gradient-to-r from-sky-400 to-emerald-400"
+                        style={{ width: `${Math.min(100, Math.max(0, mcqScore))}%` }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-gray-400 mt-1">Score graph</p>
+                  </div>
                 </>
               ) : (
                 <p className="text-sm text-gray-400">MCQ score will be available shortly.</p>
@@ -558,6 +812,26 @@ const InterviewV2 = () => {
                 <p className="text-xs text-gray-400 mt-2 whitespace-pre-line">
                   {interview.reportSummary.audioVisualSummary || 'Detailed anomaly summary will appear here once ready.'}
                 </p>
+              )}
+            </div>
+            <div className="bg-gray-950 border border-gray-800 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-200 mb-2">Overall verdict</h3>
+              {mcqScore != null ? (
+                <>
+                  <p className="text-sm text-gray-300 mb-1">
+                    {mcqScore >= 80
+                      ? 'Excellent technical performance. You are interview-ready.'
+                      : mcqScore >= 60
+                        ? 'Good performance with room for refinement on a few topics.'
+                        : 'Foundational gaps detected. Focused revision is recommended.'}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    This verdict is based on your objective MCQ accuracy only. Review the detailed breakdown below to
+                    see which questions impacted your score.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-gray-400">Verdict will appear once scoring is complete.</p>
               )}
             </div>
           </div>

@@ -142,9 +142,6 @@ This project has a backend (`backend/`) and a frontend (`frontend/`). Follow the
 ### 1) Prereqs
 - **Node.js 18+** (includes npm). Verify with `node -v` and `npm -v` in a NEW PowerShell window.
 - **MongoDB Community** (local) or a cloud MongoDB URI.
-- Optional for code execution (Judge0):
-  - Docker Desktop (for local Judge0), or
-  - RapidAPI account/key for Judge0 CE.
 
 ### 2) Backend setup
 From the project root `AI_PREP/`:
@@ -159,15 +156,9 @@ JWT_SECRET=dev_secret_change_me
 CORS_ORIGIN=http://localhost:5173,http://localhost:5174,http://localhost:5175
 API_PREFIX=/api
 
-# Choose ONE Judge0 option
-# Option A: RapidAPI
-# JUDGE0_URL=https://judge0-ce.p.rapidapi.com
-# JUDGE0_RAPIDAPI_KEY=<your_rapidapi_key>
-# JUDGE0_LOG=1
-
-# Option B: Local Judge0 (Docker)
-# JUDGE0_URL=http://localhost:2358
-# JUDGE0_LOG=1
+# Optional: ACE-based execution (see root README for full setup)
+ACE_URL=http://localhost:8080
+JUDGE_LOG=1
 ```
 
 Install and run the backend:
@@ -208,24 +199,16 @@ npm run dev
 # Open the printed URL, e.g., http://localhost:5173
 ```
 
-### 4) Judge0 options (to get Actual outputs)
+### 4) Code execution (ACE)
 
-- Option A: RapidAPI (no Docker)
-  1. Subscribe to “Judge0 CE” on RapidAPI (free tier ok).
-  2. Set `JUDGE0_URL` and `JUDGE0_RAPIDAPI_KEY` in `backend/.env`.
-  3. Restart the backend.
-
-- Option B: Local Judge0 (Docker)
-  ```powershell
-  docker run -d -p 2358:2358 judge0/judge0:latest
-  ```
-  Set `JUDGE0_URL=http://localhost:2358` in `backend/.env` and restart backend.
+- Follow the root `README.md` ACE section to start the ACE services (API + worker) via Docker.
+- Ensure `ACE_URL` in `backend/.env` points to the ACE API (default: `http://localhost:8080`).
 
 ### 5) Verify integration
 
 - **CORS**: Ensure your frontend origin(s) exist in `CORS_ORIGIN` and restart backend if edited.
 - **API**: Browser → DevTools → Network → `GET /api/challenges/daily` returns 200.
-- **Run challenge**: Open “Two Sum” and click Run. In `POST /api/challenges/run`, `data.details[].actual` should be populated when Judge0 is working.
+- **Run challenge**: Open “Two Sum” and click Run. In `POST /api/challenges/run`, `data.details[].actual` should be populated when ACE is working.
 
 ## 🧪 Backend Endpoints (quick reference)
 
@@ -247,9 +230,7 @@ npm run dev
 - **CORS blocked**
   - Add exact frontend origin(s) to `CORS_ORIGIN` in `backend/.env` and restart backend.
 
-- **Judge0 errors / empty Actual outputs**
-  - RapidAPI: verify subscription and `JUDGE0_RAPIDAPI_KEY`.
-  - Docker: ensure the Judge0 container is running and `JUDGE0_URL` points to it.
+  
 
 - **.env changes not applied**
   - Restart the backend process after editing `backend/.env`.

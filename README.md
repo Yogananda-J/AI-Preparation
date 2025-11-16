@@ -5,19 +5,19 @@ UpSkill is a monorepo for a modern coding interview and practice platform. It in
 - A React (Vite) frontend
 - An Express/MongoDB backend
 - An optional Python FastAPI ML service for proctored interviews (overall webcam recording + anomaly analysis)
-- Optional local code execution (ACE) and Judge0 integration for running code challenges
+- Optional local code execution (ACE) for running code challenges
 
 ## Tech Stack
 
 - Frontend: React 19 + Vite 7, React Router, TailwindCSS, Axios
 - Backend: Node/Express, MongoDB (Mongoose), JWT auth, Zod
-- Optional services: ACE runner (for multi-case execution), Judge0 (code execution API)
+- Optional services: ACE runner (for multi-case execution)
 
 ## Repository Structure
 
 ```
 AI_PREP/
-├─ backend/                # Express API server
+├─ backend/                # Node/Express API server
 │  ├─ src/
 │  │  ├─ app.js           # Express app binding routes, CORS, health
 │  │  ├─ config/          # env & db (mongoose) config
@@ -28,8 +28,11 @@ AI_PREP/
 │  │  ├─ routes/          # route definitions (auth, challenges, leaderboard, profile, interviews)
 │  │  ├─ services/        # extra services/helpers
 │  │  └─ ws/              # interview WebSocket server (audio/video stream endpoints)
-│  ├─ scripts/
-│  │  └─ seed_demo.js     # optional seeding
+│  ├─ ml_service/         # Python FastAPI ML service for interviews
+│  │  ├─ main.py          # FastAPI application
+│  │  ├─ questions.py     # Question selection logic
+│  │  └─ data/            # Question databases
+│  ├─ scripts/            # Utility scripts (seeding, etc.)
 │  ├─ .env                # backend environment (see below)
 │  └─ package.json
 ├─ frontend/               # React app (Vite)
@@ -39,21 +42,8 @@ AI_PREP/
 │  │  ├─ services/        # api client and domain services
 │  │  ├─ utils/           # helpers
 │  │  ├─ App.jsx, main.jsx, router.jsx, index.css, App.css
-│  ├─ .env                 # frontend environment (see below)
+│  ├─ .env                # frontend environment (see below)
 │  └─ package.json
-├─ backend/                # Express API server
-│  ├─ ml_service/          # Python FastAPI ML service for interviews
-│  │  ├─ main.py           # FastAPI application
-│  │  ├─ questions.py      # Question selection logic
-│  │  └─ data/             # Question databases
-│  ├─ src/
-│  │  ├─ controllers/      # Business logic (auth, challenges, interviews, etc.)
-│  │  ├─ models/           # Mongoose models (User, Challenge, Submission, etc.)
-│  │  ├─ routes/           # Route definitions
-│  │  ├─ services/         # Services (interview store, etc.)
-│  │  ├─ ws/               # WebSocket server for interview streaming
-│  │  └─ data/             # Challenge datasets (merged_problems.json)
-│  └─ scripts/             # Utility scripts (seeding, etc.)
 ├─ ace/                    # optional local code runner (ACE)
 │  ├─ api/                 # ACE API service (Express, MongoDB, Redis)
 │  │  ├─ src/index.js
@@ -64,7 +54,7 @@ AI_PREP/
 │  │  ├─ Dockerfile
 │  │  └─ package.json
 │  └─ docker-compose.yml   # Docker Compose for ACE services
-├─ judge0/                 # optional Judge0 deployment assets
+├─ judge0/                 # legacy Judge0 deployment assets (not used in ACE-only setup)
 ├─ gateway/                # API Gateway (placeholder for microservices)
 ├─ services/               # Microservices structure (placeholder)
 │  ├─ auth-service/
@@ -92,8 +82,6 @@ AI_PREP/
   - Docker daemon running
 - **Python 3.9+** (required for ML service)
   - pip or poetry for package management
-- **Judge0** (alternative to ACE for code execution)
-  - Local instance or RapidAPI account
 
 ## Environment Variables
 
@@ -107,11 +95,9 @@ JWT_SECRET=dev_secret_change_me
 CORS_ORIGIN=http://localhost:5173,http://localhost:5174,http://localhost:5175
 API_PREFIX=/api
 
-# Optional: Code execution services (ACE or Judge0)
+# Optional: Code execution service (ACE)
 ACE_URL=http://localhost:8080
-JUDGE0_URL=http://localhost:2358
 JUDGE_LOG=1
-# JUDGE0_RAPIDAPI_KEY=...  # For hosted Judge0 via RapidAPI
 
 # Optional: ML Service for interview features
 ML_BASE_URL=http://localhost:8001
@@ -172,6 +158,230 @@ Notes:
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:4000/api
    - Health check: http://localhost:4000/api/health
+
+## Full Setup on a New System
+
+This section walks through setting up **everything** on a fresh machine:
+
+- Backend (Node/Express + MongoDB)
+- Frontend (React + Vite)
+- ACE code execution service (Docker)
+- Optional ML service (Python FastAPI)
+
+The examples below assume **Windows + PowerShell**, but the commands are easily adapted to macOS/Linux.
+
+### 1. Install prerequisites
+
+- **Node.js 18+** (includes npm)
+  - Download from https://nodejs.org and install.
+  - Verify in a new terminal:
+    - `node -v`
+    - `npm -v`
+- **MongoDB**
+  - Either install MongoDB Community Server locally, or use a MongoDB Atlas URI.
+  - Default local URL used by this project: `mongodb://127.0.0.1:27017/aicodeskill`.
+- **Docker Desktop** (for ACE)
+  - Install Docker Desktop, start it, and ensure the Docker daemon is running.
+  - Verify:
+    - `docker -v`
+    - `docker compose version` **or** `docker-compose -v` (depending on your Docker installation).
+- **Python 3.9+** (for ML service; optional)
+  - Install from https://www.python.org.
+  - Verify: `python --version` or `python3 --version`.
+
+### 2. Clone the repository
+
+```powershell
+git clone <repository-url>
+cd AI_PREP
+```
+
+### 3. Configure backend environment
+
+Create `backend/.env`:
+
+```ini
+NODE_ENV=development
+PORT=4000
+MONGO_URI=mongodb://127.0.0.1:27017/aicodeskill
+JWT_SECRET=dev_secret_change_me
+CORS_ORIGIN=http://localhost:5173,http://localhost:5174,http://localhost:5175
+API_PREFIX=/api
+
+# Optional: Code execution service (ACE)
+ACE_URL=http://localhost:8080
+JUDGE_LOG=1
+
+# Optional ML service (for interview features)
+ML_BASE_URL=http://localhost:8001
+ML_SERVICE_URL=http://localhost:8001
+
+# Where interview videos are stored
+UPLOAD_DIR=uploads
+```
+
+You can keep `ML_BASE_URL`/`ML_SERVICE_URL` even if you don’t start the ML service yet; those endpoints are optional.
+
+### 4. Start MongoDB
+
+If you use **local MongoDB** on Windows and it’s not already running as a service:
+
+```powershell
+# Create data directory once
+mkdir C:\data\db -ErrorAction SilentlyContinue | Out-Null
+
+# Start mongod (adjust version/path as needed)
+Start-Process -FilePath "C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe" -ArgumentList "--dbpath","C:\\data\\db"
+```
+
+If you prefer **Docker for MongoDB**:
+
+```powershell
+docker run -d -p 27017:27017 --name mongodb mongo:6
+```
+
+### 5. Install and run backend
+
+```powershell
+cd backend
+npm install
+npm run dev
+```
+
+Expected:
+
+- Logs showing `MongoDB connected`.
+- API listening on `http://localhost:4000/api`.
+- Health check works: open `http://localhost:4000/api/health`.
+
+Leave this terminal running.
+
+### 6. Start ACE (Docker code execution service)
+
+In a **new terminal**, from the project root:
+
+```powershell
+cd ace
+
+# Start all ACE services (API, worker, MongoDB, Redis)
+docker-compose up -d
+
+# Or if your Docker uses `docker compose`:
+# docker compose up -d
+```
+
+You should see containers for:
+
+- `ace-api-1`
+- `ace-worker-1`
+- `ace-mongo-1`
+- `ace-redis-1`
+
+Verify ACE API is reachable:
+
+```powershell
+curl http://localhost:8080/submissions
+```
+
+It’s fine if this returns a 404 or error JSON; the key is that you **don’t** see `Failed to connect`.
+
+Ensure `ACE_URL` in `backend/.env` matches the ACE API URL (default `http://localhost:8080`).
+
+### 7. (Optional) Start the ML service
+
+In another terminal:
+
+```powershell
+cd backend/ml_service
+
+# Install minimal dependencies (or use a requirements.txt if present)
+python -m pip install fastapi uvicorn pydantic
+
+# Start the ML service
+python -m uvicorn main:app --host 0.0.0.0 --port 8001
+```
+
+Verify:
+
+- `curl http://localhost:8001/health` should return a small JSON health response.
+
+You can skip this step if you don’t need interview/ML features immediately; the main coding challenge flow works without it.
+
+### 8. Configure and run frontend
+
+Create `frontend/.env`:
+
+```ini
+VITE_API_BASE=http://localhost:4000/api
+VITE_DEV_MODE=false
+VITE_USE_MOCKS=false
+```
+
+Then in a new terminal:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open the URL printed by Vite, typically `http://localhost:5173`.
+
+### 9. Verify end-to-end flow
+
+From the browser:
+
+- Visit the **Challenges** page.
+- Open a challenge (e.g., “Two Sum”).
+- Write a simple solution in one of the supported languages.
+- Click **Run**.
+
+In DevTools Network tab, you should see:
+
+- `POST /api/challenges/run` returning `{ success: true, data: { verdict, passed, total, time, memory, caseResults, ... } }`.
+
+If something fails:
+
+- Check backend logs for errors (e.g. missing `ACE_URL`, Mongo connection issues).
+- Confirm ACE containers are running: `docker-compose ps` in `ace/`.
+- Use `JUDGE_LOG=1` in `backend/.env` to see detailed run/harness logs.
+
+Once this works, the full coding challenge loop (edit → run → submit) is correctly set up on your system.
+
+### 10. (Optional) Single command for backend + ML service
+
+If you frequently use the ML service, you can configure a single command in `backend/` to start **both** the Node backend and the Python ML service.
+
+1. Install `concurrently` as a dev dependency:
+
+   ```powershell
+   cd backend
+   npm install --save-dev concurrently
+   ```
+
+2. Edit `backend/package.json` and add scripts (adjust `dev` if your current command is different):
+
+   ```jsonc
+   "scripts": {
+     "dev": "nodemon src/index.js",              // existing backend dev script
+     "dev:ml": "cd ml_service && python -m uvicorn main:app --host 0.0.0.0 --port 8001",
+     "dev:all": "concurrently \"npm run dev\" \"npm run dev:ml\""
+   }
+   ```
+
+3. From `backend/`, start both services with one command:
+
+   ```powershell
+   cd backend
+   npm run dev:all
+   ```
+
+This will run:
+
+- The Node backend (`npm run dev`)
+- The ML service (`python -m uvicorn main:app ...`)
+
+in parallel, with interleaved logs in the same terminal. You can still run them separately if you prefer.
 
 ## Install and Run (Local)
 
@@ -274,21 +484,12 @@ curl http://localhost:8080/submissions/<token>
 - Port conflicts: Change ports in `docker-compose.yml` and update `ACE_URL` in backend `.env`
 - MongoDB port conflict: ACE uses MongoDB on port 27017. Consider using MongoDB Atlas for backend or changing ACE MongoDB port
 
-#### Judge0 (Alternative Code Execution Service)
-
-Judge0 is an alternative code execution service. You can use either ACE or Judge0.
-
-- **Local Judge0**: Ensure `JUDGE0_URL` is reachable (default: http://localhost:2358)
-- **Judge0 RapidAPI**: Set `JUDGE0_RAPIDAPI_KEY` in `backend/.env` for hosted service
-
 #### ML Service (Interview AI Features)
 
 The ML service provides AI-powered interview features. In the current UpSkill implementation it is primarily used for:
 
 - Health checking the ML stack
 - Stubbed video anomaly analysis for InterviewV2 (overall webcam recording)
-
-Legacy endpoints for full ML-driven interviews (start_interview/next_question/finish_interview, WebSocket metrics, ASR/FER) still exist but are not used by the current InterviewV2 flow.
 
 **Prerequisites:**
 - Python 3.9+
@@ -365,7 +566,7 @@ npm run seed:demo
 - `GET /api/challenges` - List all challenges (supports filtering, pagination)
 - `GET /api/challenges/daily` - Get daily challenges
 - `GET /api/challenges/:idOrSlug` - Get challenge by ID or slug
-- `POST /api/challenges/run` - Run code against test cases (ACE/Judge0 integration)
+- `POST /api/challenges/run` - Run code against test cases (ACE integration)
   - Body: `{ challengeId, code, language, inputs? }`
   - Returns: `{ success, data: { verdict, passed, total, time, memory, caseResults } }`
 - `POST /api/challenges/submit` - Submit solution (auth required)
@@ -436,7 +637,7 @@ On the frontend, the InterviewV2 page:
 ### General
 - **React DevTools**: https://react.dev/link/react-devtools
 - If you change `.env` files, restart the respective dev servers.
-- Use `JUDGE_LOG=1` in backend `.env` for detailed code execution logs.
+- Use `JUDGE_LOG=1` only when debugging (reduces performance)
 
 ### Troubleshooting
 
@@ -455,10 +656,6 @@ If code-execution endpoints fail:
   - Verify `ACE_URL` in backend `.env` matches ACE API URL
   - Check worker logs: `docker-compose logs worker`
   - Ensure Docker socket is accessible: Worker needs `/var/run/docker.sock` access
-- **Judge0**:
-  - Verify `JUDGE0_URL` is correct in backend `.env`
-  - If using RapidAPI, ensure `JUDGE0_RAPIDAPI_KEY` is set
-  - Check Judge0 service is running (if local instance)
 
 #### Interview/ML Service Issues
 If interview features don't work:
@@ -478,17 +675,13 @@ If interview features don't work:
 2. **Backend processes request**:
    - Validates challenge and test cases
    - Generates code harness if needed (Two Sum, Add Two Numbers, etc.)
-   - Determines execution service (ACE preferred, Judge0 fallback)
+   - Executes code via ACE (preferred and only configured runner)
 3. **ACE Execution** (if `ACE_URL` is set):
    - Backend sends submission to ACE API: `POST /submissions`
    - ACE API creates submission record and queues job
    - Worker picks up job and executes code in Docker container
    - Backend polls ACE API for results: `GET /submissions/:token`
    - Returns results with verdicts and test case details
-4. **Judge0 Execution** (if `JUDGE0_URL` is set and ACE unavailable):
-   - Backend sends submission to Judge0 API
-   - Judge0 executes code (wait mode or polling)
-   - Returns results with verdicts and execution details
 
 ### Language Support
 
@@ -497,16 +690,8 @@ If interview features don't work:
 - **Java 17** (language_id: 62)
 - *More languages can be added by extending `languageToRunner()` in `ace/worker/src/index.js`*
 
-#### Judge0 Service
-- **JavaScript/Node.js** (language_id: 63)
-- **Python 3** (language_id: 71)
-- **Java** (language_id: 62)
-- **C++** (language_id: 54)
-- *Supports 60+ languages (see Judge0 documentation)*
-
 ### Performance Tips
 - Use ACE for local development (faster, no API limits)
-- Use Judge0 RapidAPI for production (scalable, managed service)
 - Enable `JUDGE_LOG=1` only when debugging (reduces performance)
 - Cache challenge data to reduce database queries
 - Use connection pooling for MongoDB
@@ -668,7 +853,7 @@ If interview features don't work:
 
 ## Code Execution and Harnesses
 
-- **Execution services**: Backend uses ACE (preferred) or Judge0 to compile/run code.
+- **Execution services**: Backend uses ACE to compile/run code.
 - **Statuses**: AC, WA, TLE, RE (runtime error), CE (compilation error).
 - **Generated source view**: When using a generic harness, logs show a “Generated source code” block. Java line numbers in errors refer to this combined file.
 
@@ -756,7 +941,7 @@ If interview features don't work:
 - 🔄 Token refresh handling for authentication
 - 🔄 Better error boundaries and toast notifications
 - 🔄 Expand challenge dataset with more problems
-- 🔄 Improve Judge0/ACE reliability and fallbacks
+- 🔄 Improve ACE reliability and fallbacks
 - 🔄 Add code execution result caching
 - 🔄 Implement interview session persistence in database
 - 🔄 Add interview history and analytics

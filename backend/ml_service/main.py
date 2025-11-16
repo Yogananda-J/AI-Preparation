@@ -1,10 +1,13 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
+from pathlib import Path
 import base64
 import time
 import json
 import random
+import cv2
+import numpy as np
 try:
     # When running as a package: uvicorn ml_service.main:app
     from .questions import pick_questions
@@ -365,54 +368,130 @@ def finish_interview(req: FinishInterviewRequest):
 
 @app.post("/video_anomaly", response_model=VideoAnomalyResponse)
 def video_anomaly(req: VideoAnomalyRequest):
-    """Stubbed video anomaly endpoint for InterviewV2.
+    """Lightweight OpenCV-based video anomaly endpoint for InterviewV2.
 
-    The current implementation does NOT run any heavy ML. It simply
-    returns deterministic pseudo-random scores and flags derived from
-    the interview/question identifiers, so the Node.js backend and
-    frontend can be wired and tested end-to-end.
+    This version runs real but inexpensive analysis on the uploaded
+    video file. It detects faces, estimates motion for liveness, and
+    checks basic video quality (brightness/blur). Deepfake and lip-sync
+    flags remain stubbed for now.
     """
 
-    # Derive a pseudo-random but stable seed from the IDs so that the
-    # same video yields the same result across calls.
-    seed_str = f"{req.interview_id}:{req.question_id}"
-    seed = abs(hash(seed_str)) % (10**8)
-    rnd = random.Random(seed)
+    video_path = req.video_path
+    path = Path(video_path)
+    if not path.exists():
+        flags = VideoAnomalyFlags(lowQuality=True, livenessIssues=True)
+        return VideoAnomalyResponse(
+            anomalyScore=100.0,
+            flags=flags,
+            summary="Video file not found on server; treating as invalid/low-quality recording.",
+        )
 
-    # Overall anomaly score between 0 and 100
-    score = round(rnd.uniform(0, 100), 1)
+    cap = cv2.VideoCapture(str(path))
+    if not cap.isOpened():
+        flags = VideoAnomalyFlags(lowQuality=True, livenessIssues=True)
+        return VideoAnomalyResponse(
+            anomalyScore=100.0,
+            flags=flags,
+            summary="Unable to open video file for analysis.",
+        )
 
-    # Generate flags based on score bands
+    # Load a simple Haar cascade for face detection
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
+    frame_idx = 0
+    sample_stride = 10  # analyse every 10th frame
+    face_counts: List[int] = []
+    motion_scores: List[float] = []
+    brightness_vals: List[float] = []
+    blur_vals: List[float] = []
+    prev_gray = None
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame_idx += 1
+        if frame_idx % sample_stride != 0:
+            continue
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Face detection
+        faces = face_cascade.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(60, 60),
+        )
+        face_counts.append(len(faces))
+
+        # Simple motion estimate for liveness (frame-to-frame difference)
+        if prev_gray is not None:
+            diff = cv2.absdiff(gray, prev_gray)
+            motion = float(np.mean(diff))
+            motion_scores.append(motion)
+        prev_gray = gray
+
+        # Brightness and blur
+        brightness = float(np.mean(gray))
+        blur = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+        brightness_vals.append(brightness)
+        blur_vals.append(blur)
+
+    cap.release()
+
+    if not face_counts:
+        flags = VideoAnomalyFlags(livenessIssues=True, lowQuality=True)
+        return VideoAnomalyResponse(
+            anomalyScore=80.0,
+            flags=flags,
+            summary="No reliable face detections in the recording; candidate may be off-camera or camera quality is too low.",
+        )
+
+    avg_faces = float(np.mean(face_counts))
+    max_faces = int(max(face_counts))
+    avg_motion = float(np.mean(motion_scores)) if motion_scores else 0.0
+    avg_brightness = float(np.mean(brightness_vals)) if brightness_vals else 0.0
+    avg_blur = float(np.mean(blur_vals)) if blur_vals else 0.0
+
+    # Heuristic flags (tune thresholds with real data)
+    multi_face = max_faces >= 2
+    liveness_issues = avg_motion < 5.0
+    low_quality = (avg_brightness < 40.0) or (avg_blur < 20.0)
+
     flags = VideoAnomalyFlags(
-        multiFace=score > 60,
-        deepfakeRisk=score > 75,
-        livenessIssues=score > 50,
-        lowQuality=score > 40,
-        lipSyncIssues=score > 55,
+        multiFace=multi_face,
+        deepfakeRisk=False,  # real deepfake detection requires heavier models
+        livenessIssues=liveness_issues,
+        lowQuality=low_quality,
+        lipSyncIssues=False,
     )
 
-    problems = [
-        name for name, active in [
-            ("multiple faces detected (possible collaboration)", flags.multiFace),
-            ("potential deepfake / spoofing artifacts", flags.deepfakeRisk),
-            ("low liveness / limited natural movement", flags.livenessIssues),
-            ("low video quality (blur/lighting issues)", flags.lowQuality),
-            ("lip-sync inconsistencies or off-camera speaking", flags.lipSyncIssues),
-        ]
-        if active
-    ]
+    # Build anomaly score from heuristics
+    score = 0.0
+    if multi_face:
+        score += 40
+    if liveness_issues:
+        score += 30
+    if low_quality:
+        score += 20
+    score = min(100.0, score)
+
+    problems = []
+    if multi_face:
+        problems.append("multiple faces detected (possible collaboration)")
+    if liveness_issues:
+        problems.append("low liveness / limited natural movement")
+    if low_quality:
+        problems.append("low video quality (blur/lighting issues)")
 
     if not problems:
         summary = (
-            "No significant anomalies detected. Eye contact and movement appear consistent with a focused, "
-            "single-attendee session."
+            "No significant anomalies detected. Single face detected consistently with natural movement "
+            "and acceptable video quality."
         )
     else:
-        summary = (
-            "Anomaly indicators related to attention and authenticity: "
-            + "; ".join(problems)
-            + "."
-        )
+        summary = "Anomaly indicators: " + "; ".join(problems) + "."
 
     return VideoAnomalyResponse(anomalyScore=score, flags=flags, summary=summary)
 

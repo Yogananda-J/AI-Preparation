@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, RotateCcw, Save, Clock, List, X } from 'lucide-react';
+import { Play, RotateCcw, Save, Clock, List, X, ChevronLeft, ChevronRight, Shuffle, Search } from 'lucide-react';
 import CodeEditor from '../components/CodeEditor';
 import challengeService from '../services/challengeService';
 import authService from '../services/authService';
@@ -150,6 +150,16 @@ const Challenge = () => {
   const [userEdited, setUserEdited] = useState(false);
   const [testCases, setTestCases] = useState([]); // [{id:'case1', fields:[{name,value}]}]
   const [testCaseValues, setTestCaseValues] = useState({}); // { caseId: [{name,value}] }
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const normalizedSearch = (searchTerm || '').trim().toLowerCase();
+  const filteredChallengeList = !normalizedSearch
+    ? challengeList
+    : challengeList.filter((c) => {
+        const title = (c.title || '').toLowerCase();
+        const idStr = String(c.id || '').toLowerCase();
+        return title.includes(normalizedSearch) || idStr.includes(normalizedSearch);
+      });
 
   const parseRunDetails = (details) => {
     if (!details || typeof details !== 'string') return [];
@@ -357,29 +367,67 @@ const Challenge = () => {
     }
   };
 
+  const navigateToChallenge = (targetId) => {
+    if (!targetId) return;
+    if (userEdited) {
+      const ok = window.confirm('You have unsaved changes in the editor. Switching problems will load default code for the new problem and clear run output. Continue?');
+      if (!ok) return;
+    }
+    setUserEdited(false);
+    setShowListModal(false);
+    navigate(`/challenge/${targetId}`);
+  };
+
+  const currentChallengeIndex = Array.isArray(challengeList)
+    ? challengeList.findIndex((c) => String(c.id) === String(challenge.id))
+    : -1;
+
+  const goToPrevChallenge = () => {
+    if (!Array.isArray(challengeList) || currentChallengeIndex <= 0) return;
+    const prev = challengeList[currentChallengeIndex - 1];
+    if (prev) navigateToChallenge(prev.id);
+  };
+
+  const goToNextChallenge = () => {
+    if (!Array.isArray(challengeList) || currentChallengeIndex < 0) return;
+    const next = challengeList[currentChallengeIndex + 1];
+    if (next) navigateToChallenge(next.id);
+  };
+
+  const goToRandomChallenge = () => {
+    if (!Array.isArray(challengeList) || challengeList.length === 0) return;
+    if (challengeList.length === 1) return;
+    const currentId = String(challenge.id);
+    const pool = challengeList.filter((c) => String(c.id) !== currentId);
+    if (!pool.length) return;
+    const random = pool[Math.floor(Math.random() * pool.length)];
+    if (random) navigateToChallenge(random.id);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="border-b border-gray-200 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button onClick={() => setShowListModal(true)} className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100">
-              <List className="h-4 w-4" />
-              <span className="text-sm">Challenges List</span>
-            </button>
-            <h1 className="text-lg font-semibold text-gray-900">{challenge.title}</h1>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(challenge.difficulty)}`}>{challenge.difficulty}</span>
-            {Array.isArray(challenge.topics) && challenge.topics.length > 0 && (
-              <div className="flex items-center flex-wrap gap-1 ml-2">
-                {challenge.topics.slice(0, 4).map((t, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">{t}</span>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <select
-              value={language}
-              onChange={(e) => {
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <button onClick={() => setShowListModal(true)} className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100">
+                <List className="h-4 w-4" />
+                <span className="text-sm">Challenges List</span>
+              </button>
+              <h1 className="text-lg font-semibold text-gray-900">{challenge.title}</h1>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(challenge.difficulty)}`}>{challenge.difficulty}</span>
+              {Array.isArray(challenge.topics) && challenge.topics.length > 0 && (
+                <div className="flex items-center flex-wrap gap-1 ml-2">
+                  {challenge.topics.slice(0, 4).map((t, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">{t}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              <select
+                value={language}
+                onChange={(e) => {
                 const lang = e.target.value;
                 const snippets = challenge.codeSnippets || {};
                 const starter = challenge.starterCode || {};
@@ -395,14 +443,51 @@ const Challenge = () => {
                 setLanguage(lang);
               }}
               className="input-field h-9"
-            >
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-            </select>
-            <button onClick={handleSaveCode} className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100 flex items-center space-x-1">
-              <Save className="h-4 w-4" />
-              <span>Save</span>
-            </button>
+              >
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+              </select>
+              <button onClick={handleSaveCode} className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100 flex items-center space-x-1">
+                <Save className="h-4 w-4" />
+                <span>Save</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-2 flex items-center justify-between text-sm">
+            <div className="flex items-center gap-1 text-gray-700">
+              <button
+                type="button"
+                onClick={goToPrevChallenge}
+                disabled={currentChallengeIndex <= 0}
+                className={`inline-flex items-center justify-center h-7 w-7 rounded-md border text-xs font-medium ${
+                  currentChallengeIndex <= 0
+                    ? 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={goToNextChallenge}
+                disabled={currentChallengeIndex < 0 || currentChallengeIndex >= challengeList.length - 1}
+                className={`inline-flex items-center justify-center h-7 w-7 rounded-md border text-xs font-medium ${
+                  currentChallengeIndex < 0 || currentChallengeIndex >= challengeList.length - 1
+                    ? 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={goToRandomChallenge}
+                className="inline-flex items-center justify-center h-7 w-7 rounded-md border border-gray-300 text-xs font-medium bg-white text-gray-600 hover:bg-gray-50"
+              >
+                <Shuffle className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -862,19 +947,23 @@ const Challenge = () => {
               <h3 className="text-sm font-semibold text-gray-900">Challenges List</h3>
               <button onClick={() => setShowListModal(false)} className="p-1 hover:bg-gray-100 rounded"><X className="h-4 w-4" /></button>
             </div>
-            <div className="p-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 54px)' }}>
-              {challengeList.map((c) => (
+            <div className="px-4 pt-3 pb-2 border-b border-gray-200">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search problems..."
+                  className="w-full pl-7 pr-3 py-1.5 rounded-md border border-gray-300 bg-white text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+                <Search className="h-3.5 w-3.5 text-gray-400 absolute left-1.5 top-1/2 -translate-y-1/2" />
+              </div>
+            </div>
+            <div className="p-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 96px)' }}>
+              {filteredChallengeList.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => {
-                    if (userEdited) {
-                      const ok = window.confirm('You have unsaved changes in the editor. Switching problems will load default code for the new problem and clear run output. Continue?');
-                      if (!ok) return;
-                    }
-                    setUserEdited(false);
-                    setShowListModal(false);
-                    navigate(`/challenge/${c.id}`);
-                  }}
+                  onClick={() => navigateToChallenge(c.id)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded hover:bg-gray-50 border-b border-gray-100`}
                 >
                   <div className="text-left">
